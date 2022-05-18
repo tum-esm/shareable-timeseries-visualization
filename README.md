@@ -1,3 +1,3 @@
 # Shareable Timeseries Visualisation
 
-_Work in progress! Website is not running yet._
+_Work in progress! Website is not running yet. Ask Moritz Makowski._
