@@ -4,7 +4,7 @@ from stv_client import STVClient
 
 def example_procedure():
     client = STVClient(
-        schema={"sensor_id": "string", "x": "float", "y": "float"},
+        schema={"sensor_id": "string", "hour": "float", "y": "float"},
         database_name="airquality_course",
         table_name="test_data",
     )
@@ -13,18 +13,18 @@ def example_procedure():
 
     time.sleep(3)
 
-    client.insert_data({"sensor_id": "sensor-1", "x": 40, "y": 100})
-    client.insert_data({"sensor_id": "sensor-2", "x": 40, "y": 120})
+    client.insert_data({"sensor_id": "sensor-1", "hour": 40, "y": 100})
+    client.insert_data({"sensor_id": "sensor-2", "hour": 40, "y": 120})
 
     time.sleep(3)
 
-    client.insert_data({"sensor_id": "sensor-1", "x": 45, "y": 80})
-    client.insert_data({"sensor_id": "sensor-2", "x": 45, "y": 130})
+    client.insert_data({"sensor_id": "sensor-1", "hour": 45, "y": 80})
+    client.insert_data({"sensor_id": "sensor-2", "hour": 45, "y": 130})
 
     time.sleep(3)
 
-    client.insert_data({"sensor_id": "sensor-1", "x": 50, "y": 70})
-    client.insert_data({"sensor_id": "sensor-2", "x": 50, "y": 150})
+    client.insert_data({"sensor_id": "sensor-1", "hour": 50, "y": 70})
+    client.insert_data({"sensor_id": "sensor-2", "hour": 50, "y": 150})
 
     del client
 

@@ -29,8 +29,11 @@ class STVClient:
         )
         if not self.table_exists():
             self.create_table()
+        # TODO: drop and recreate table on schema change
 
     def validate_schema_format(self):
+        assert "hour" in self.schema.keys(), 'key "hour" is required in schema'
+        assert self.schema["hour"] == "float", 'key "hour" has to be a float'
         for key, data_type in self.schema.items():
             assert isinstance(key, str), "schema key has to be a string"
             assert all(
@@ -56,18 +59,18 @@ class STVClient:
                     data[key], int | float
                 ), f"data[{key}] should be a number"
 
-    def create_table(self, table_name: str):
+    def create_table(self):
         cursor = self.connection.cursor()
         sql_types = {"string": "VARCHAR(32)", "float": "FLOAT", "int": "INT"}
         columns = [f"{key} {sql_types[value]}" for key, value in self.schema.items()]
         sql_statement = (
-            f"CREATE TABLE {table_name} (ID INT NOT NULL AUTO_INCREMENT, "
+            f"CREATE TABLE {self.table_name} (ID INT NOT NULL AUTO_INCREMENT, "
             + f"{' ,'.join(columns)}"
             + ", PRIMARY KEY (ID));"
         )
         cursor.execute(sql_statement, ())
         self.connection.commit()
-        print(f"table {table_name} created")
+        print(f"table {self.table_name} created")
 
     def table_exists(self):
         cursor = self.connection.cursor()
@@ -109,5 +112,8 @@ class STVClient:
         return cursor.fetchall()
 
     def __del__(self):
-        self.connection.close()
+        try:
+            self.connection.close()
+        except:
+            pass
         del self
