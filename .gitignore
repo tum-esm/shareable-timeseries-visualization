@@ -3,5 +3,6 @@
 client/.venv
 client/**/*.pyc
 client/**/__pycache__
+client/config.json
 
 website/node_modules
