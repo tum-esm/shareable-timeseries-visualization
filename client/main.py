@@ -70,12 +70,11 @@ def insert_data(connection: mysql.connector.MySQLConnection, data: dict):
         cursor = connection.cursor()
         keys = data.keys()
         values = [str(data[key]) for key in keys]
-        placeholders = [('"%s"' if SCHEMA[key] == "string" else "%s") for key in keys]
         sql_statement = (
             f"INSERT INTO {SQL_TABLE} "
             + f"({', '.join(keys)})"
             + " VALUES "
-            + f"({', '.join(placeholders)})"
+            + f"({', '.join(['%s']*len(keys))})"
         )
         print(f"sql statement: \"{sql_statement.replace('%s', '{}').format(*values)}\"")
         cursor.execute(sql_statement, values)
@@ -83,6 +82,12 @@ def insert_data(connection: mysql.connector.MySQLConnection, data: dict):
         assert cursor.rowcount == 1, "Row could not be inserted - reason unknown"
     except Exception as e:
         raise Exception(f"Error when performing insert: {e}")
+
+
+def read_latest_n_records(connection: mysql.connector.MySQLConnection, n: int):
+    cursor = connection.cursor()
+    cursor.execute(f"SELECT * FROM {SQL_TABLE} ORDER BY ID DESC LIMIT {n}", ())
+    return cursor.fetchall()
 
 
 def main():
@@ -101,6 +106,8 @@ def main():
 
     if not table_exists(connection):
         create_table(connection)
+
+    print("latest 10 records: ", read_latest_n_records(connection, 10))
 
     insert_data(connection, {"sensor_id": "sensor-1", "x": 40, "y": 100})
     insert_data(connection, {"sensor_id": "sensor-2", "x": 40, "y": 120})
