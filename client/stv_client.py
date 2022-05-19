@@ -1,3 +1,4 @@
+from datetime import datetime
 import mysql.connector
 import os
 import json
@@ -7,12 +8,15 @@ PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class STVClient:
     def __init__(self, schema: dict, database_name: str, table_name: str):
-        with open(os.path.join(PROJECT_DIR, "config.json")) as f:
-            CONFIG = json.load(f)
-            SQL_USER = CONFIG["sql"]["user"]
-            SQL_PASSWORD = CONFIG["sql"]["password"]
-            assert isinstance(SQL_USER, str)
-            assert isinstance(SQL_PASSWORD, str)
+        try:
+            with open(os.path.join(PROJECT_DIR, "config.json")) as f:
+                CONFIG = json.load(f)
+                SQL_USER = CONFIG["sql"]["user"]
+                SQL_PASSWORD = CONFIG["sql"]["password"]
+                assert isinstance(SQL_USER, str)
+                assert isinstance(SQL_PASSWORD, str)
+        except (AssertionError, KeyError) as e:
+            raise Exception(f"Unable to load config.json: {e}")
 
         self.schema = schema
         self.database_name = database_name
@@ -32,45 +36,52 @@ class STVClient:
         # TODO: drop and recreate table on schema change
 
     def validate_schema_format(self):
-        assert "hour" in self.schema.keys(), 'key "hour" is required in schema'
-        assert self.schema["hour"] == "float", 'key "hour" has to be a float'
-        for key, data_type in self.schema.items():
-            assert isinstance(key, str), "schema key has to be a string"
-            assert all(
-                [c == "_" or ord(c) in range(ord("a"), ord("z") + 1) for c in key]
-            ), "only lowercase letters and underscores allowed in keys"
-            assert "id" not in self.schema.keys(), '"id" not allowed as key'
-            allowed_types = ["string", "int", "float"]
-            assert data_type in allowed_types, f"allowed datatypes: {allowed_types}"
+        reserved_keys = ["id", "date", "hour"]
+        allowed_types = ["string", "float"]
+        try:
+            for key, data_type in self.schema.items():
+                assert isinstance(key, str), "key has to be a string"
+                assert all(
+                    [c == "_" or ord(c) in range(ord("a"), ord("z") + 1) for c in key]
+                ), "only lowercase letters and underscores allowed in keys"
+                assert key not in reserved_keys, "the keys {reserved_keys} are reserved"
+                assert data_type in allowed_types, f"allowed datatypes: {allowed_types}"
+        except AssertionError as e:
+            raise Exception(f"Invalid schema: {e}")
 
     def validate_data_format(self, data: dict):
-        assert isinstance(data, dict), "data has to be in dict format"
-        for key in data.keys():
-            assert key in self.schema.keys(), f'unknown key "{key}" in data'
-        for key, data_type in self.schema.items():
-            assert key in data.keys(), f'missing key "{key}" in data'
-            if data_type == "string":
-                assert isinstance(data[key], str), f"data[{key}] should be a string"
-                assert len(data[key]) < 32, "data[{key}] is longer than 31 character"
-            if data_type == "int":
-                assert isinstance(data[key], int), f"data[{key}] should be an integer"
-            if data_type == "float":
-                assert isinstance(
-                    data[key], int | float
-                ), f"data[{key}] should be a number"
+        try:
+            assert isinstance(data, dict), "pass data in dict format"
+            assert sorted(data.keys()) == sorted(
+                self.schema.keys()
+            ), "data.keys != schema.keys"
+
+            for key, data_type in self.schema.items():
+                if data_type == "string":
+                    assert isinstance(data[key], str), f"type(data[{key}]) != string"
+                    assert len(data[key]) < 32, "len(data[{key}]) >= 31 characters"
+                else:
+                    assert isinstance(
+                        data[key], int | float
+                    ), f"type(data[{key}]) != number"
+        except AssertionError as e:
+            raise Exception(f"Invalid data format: {e}")
 
     def create_table(self):
         cursor = self.connection.cursor()
         sql_types = {"string": "VARCHAR(32)", "float": "FLOAT", "int": "INT"}
         columns = [f"{key} {sql_types[value]}" for key, value in self.schema.items()]
         sql_statement = (
-            f"CREATE TABLE {self.table_name} (ID INT NOT NULL AUTO_INCREMENT, "
+            f"CREATE TABLE {self.table_name} ("
+            + "ID INT NOT NULL AUTO_INCREMENT, "
+            + "date INT NOT NULL, "
+            + "hour FLOAT NOT NULL, "
             + f"{' ,'.join(columns)}"
             + ", PRIMARY KEY (ID));"
         )
         cursor.execute(sql_statement, ())
         self.connection.commit()
-        print(f"table {self.table_name} created")
+        print(f"table {self.table_name} created: {sql_statement}")
 
     def table_exists(self):
         cursor = self.connection.cursor()
@@ -79,6 +90,17 @@ class STVClient:
 
     def insert_data(self, data: dict):
         self.validate_data_format(data)
+        now = datetime.now()
+        date = now.strftime("%Y%m%d")
+        hour = round(
+            (
+                now.hour
+                + (now.minute / 60.0)
+                + (now.second / 3600.0)
+                + (now.microsecond / (3_600_000_000.0))
+            ),
+            6,
+        )
 
         try:
             cursor = self.connection.cursor()
@@ -86,12 +108,12 @@ class STVClient:
             values = [str(data[key]) for key in keys]
             sql_statement = (
                 f"INSERT INTO {self.table_name} "
-                + f"({', '.join(keys)})"
+                + f"(date, hour, {', '.join(keys)})"
                 + " VALUES "
-                + f"({', '.join(['%s']*len(keys))})"
+                + f"({date}, {hour}, {', '.join(['%s']*len(keys))})"
             )
             print(
-                f"sql statement: \"{sql_statement.replace('%s', '{}').format(*values)}\""
+                f"SQL statement: \"{sql_statement.replace('%s', '{}').format(*values)}\""
             )
             cursor.execute(sql_statement, values)
             self.connection.commit()
