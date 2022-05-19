@@ -10,19 +10,22 @@ def rnd(min: int, max: int):
 
 def example_procedure():
     client = STVClient(
-        schema={"sensor_id": "string", "y1": "float", "y2": "float"},
         database_name="airquality_course",
         table_name="test_data",
+        data_columns=["y1", "y2"],
     )
 
     print("latest 10 records: ", client.get_latest_n_records(10))
 
     while True:
-        for s in ["sensor-1", "sensor-2", "sensor-3"]:
-            client.insert_data(
-                {"sensor_id": s, "y1": rnd(90, 110), "y2": rnd(1.7, 1.95)}
-            )
-        time.sleep(3)
+        try:
+            for sensor_name in ["sensor-1", "sensor-2", "sensor-3"]:
+                client.insert_data(
+                    sensor_name, {"y1": rnd(90, 110), "y2": rnd(1.7, 1.95)}
+                )
+            time.sleep(3)
+        except KeyboardInterrupt:
+            break
 
     del client
 

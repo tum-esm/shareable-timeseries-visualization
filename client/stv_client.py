@@ -8,7 +8,12 @@ PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class STVClient:
-    def __init__(self, schema: dict, database_name: str, table_name: str):
+    def __init__(
+        self,
+        database_name: str,
+        table_name: str,
+        data_columns: list[str],
+    ):
         try:
             with open(os.path.join(PROJECT_DIR, "config.json")) as f:
                 CONFIG = json.load(f)
@@ -19,10 +24,9 @@ class STVClient:
         except (AssertionError, KeyError) as e:
             raise Exception(f"Unable to load config.json: {e}")
 
-        self.schema = schema
         self.database_name = database_name
         self.table_name = table_name
-
+        self.data_columns = data_columns
         self.__validate_schema_format()
 
         self.connection: mysql.connector.MySQLConnection = mysql.connector.connect(
@@ -42,48 +46,40 @@ class STVClient:
         """
         Checks, whether the given schema is valid.
         """
-        reserved_keys = ["id", "date", "hour"]
-        allowed_types = ["string", "float"]
+        reserved_keys = ["id", "date", "hour", "sensor"]
         allowed_ascii_values = (
             [ord("_")]
             + list(range(ord("a"), ord("z") + 1))
             + list(range(ord("0"), ord("9") + 1))
         )
         try:
-            for key, data_type in self.schema.items():
-                assert isinstance(key, str), "key has to be a string"
-                assert all(
-                    [ord(c) in allowed_ascii_values for c in key]
-                ), "only lowercase letters, underscores and numbers allowed in keys"
-                assert key not in reserved_keys, "the keys {reserved_keys} are reserved"
-                assert data_type in allowed_types, f"allowed datatypes: {allowed_types}"
+            for d in self.data_columns:
+                assert isinstance(d, str), "have to be a string"
+                for c in d:
+                    assert (
+                        ord(c) in allowed_ascii_values
+                    ), "only lowercase letters, underscores and numbers allowed"
+                assert d not in reserved_keys, "the names {reserved_keys} are reserved"
         except AssertionError as e:
-            raise Exception(f"Invalid schema: {e}")
+            raise Exception(f"Invalid column names: {e}")
 
-    def __validate_data_format(self, data: dict):
+    def __validate_data_format(self, data: dict[str, float]):
         """
         Checks, whether the data is in the correct format with respect to the
         given schema.
         """
         try:
             assert isinstance(data, dict), "pass data in dict format"
-            assert sorted(data.keys()) == sorted(
-                self.schema.keys()
-            ), "data.keys != schema.keys"
-
-            for key, data_type in self.schema.items():
-                if data_type == "string":
-                    assert isinstance(data[key], str), f"type(data[{key}]) != string"
-                    assert len(data[key]) < 32, "len(data[{key}]) >= 31 characters"
-                else:
-                    assert isinstance(
-                        data[key], int | float
-                    ), f"type(data[{key}]) != number"
+            for key, value in data.items():
+                assert isinstance(value, float | int), "only floats allowed"
+                assert key in self.data_columns, f'unknown key "{key}"'
+            for key in self.data_columns:
+                assert key in data.keys(), f'key "{key}" missing in data'
         except AssertionError as e:
             raise Exception(f"Invalid data format: {e}")
 
     def __drop_table(self):
-        if input("drop the existing table? (y) ").startswith("y"):
+        if input("schema has changed! drop the existing table? (y) ").startswith("y"):
             cursor = self.connection.cursor()
             cursor.execute(f"DROP TABLE {self.table_name}", ())
             self.connection.commit()
@@ -96,13 +92,13 @@ class STVClient:
         Creates the required table based on the give schema.
         """
         cursor = self.connection.cursor()
-        sql_types = {"string": "VARCHAR(32)", "float": "FLOAT", "int": "INT"}
-        columns = [f"{key} {sql_types[value]}" for key, value in self.schema.items()]
+        columns = [f"{c} FLOAT NOT NULL" for c in self.data_columns]
         sql_statement = (
             f"CREATE TABLE {self.table_name} ("
             + "ID INT NOT NULL AUTO_INCREMENT, "
             + "date INT NOT NULL, "
             + "hour FLOAT NOT NULL, "
+            + "sensor VARCHAR(64) NOT NULL, "
             + f"{' ,'.join(columns)}"
             + ", PRIMARY KEY (ID));"
         )
@@ -126,22 +122,23 @@ class STVClient:
             cursor = self.connection.cursor()
             cursor.execute(f"DESCRIBE {self.database_name}.{self.table_name}")
             columns = cursor.fetchall()
+            assert len(columns) == 4 + len(self.data_columns)
             assert columns[0] == ("ID", b"int", "NO", "PRI", None, "auto_increment")
             assert columns[1][:3] == ("date", b"int", "NO")
             assert columns[2][:3] == ("hour", b"float", "NO")
-            assert len(columns) == 3 + len(self.schema.items())
-            _i = 3
-            for key, datatype in self.schema.items():
-                assert columns[_i][0] == key
-                assert (
-                    columns[_i][1].decode().replace("varchar(32)", "string") == datatype
-                )
+            assert columns[3][:3] == ("sensor", b"varchar(64)", "NO")
+            _i = 4
+            for c in self.data_columns:
+                assert columns[_i][0] == c
+                assert columns[_i][1] == b"float"
                 _i += 1
             return True
         except AssertionError:
             return False
 
-    def insert_data(self, data: dict):
+    def insert_data(self, sensor_name: str, data: dict):
+        assert len(sensor_name) <= 64, "sensor_name is longer than 64 characters"
+
         self.__validate_data_format(data)
         now = datetime.now()
         date = now.strftime("%Y%m%d")
@@ -161,9 +158,9 @@ class STVClient:
             values = [str(data[key]) for key in keys]
             sql_statement = (
                 f"INSERT INTO {self.table_name} "
-                + f"(date, hour, {', '.join(keys)})"
+                + f"(date, hour, sensor, {', '.join(keys)})"
                 + " VALUES "
-                + f"({date}, {hour}, {', '.join(['%s']*len(keys))})"
+                + f"({date}, {hour}, '{sensor_name}', {', '.join(['%s']*len(keys))})"
             )
             print(
                 f"SQL statement: \"{sql_statement.replace('%s', '{}').format(*values)}\""
