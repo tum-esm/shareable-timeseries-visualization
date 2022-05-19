@@ -2,7 +2,6 @@ import { uniq, min, max } from 'lodash';
 import * as d3 from 'd3';
 
 // rose, purple, blue, teal, lime, orange
-//
 const COLORS = [
     '#f43f5e',
     '#a855f7',
@@ -42,20 +41,20 @@ export const plotCircles = (
 
     const sensor_names = uniq(data.map((d) => d['sensor'])).sort();
 
-    sensor_names.forEach((sensorName, i) => {
-        if (i >= 12) {
+    sensor_names.forEach((sensorName, index) => {
+        if (index >= 12) {
             return;
         }
         const sensorData = data
             .filter((d) => d['sensor'] === sensorName)
             .map((d) => ({ x: d['hour'], y: d[column_name] }));
 
-        let circleGroup: any = svg.selectAll(`.circle-${sensorName}`);
+        let circleGroup: any = svg.selectAll(`.circle-group-${index}`);
         if (circleGroup.empty()) {
             circleGroup = svg
                 .append('g')
-                .attr('class', `.circle-${sensorName}`)
-                .attr('fill', COLORS[i]);
+                .attr('class', `circle-group-${index}`)
+                .attr('fill', COLORS[index]);
         }
 
         let circles: any = circleGroup.selectAll(`circle`).data(sensorData);

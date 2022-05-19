@@ -1,3 +1,43 @@
 svg g[class^='.circle'] {
     opacity: 60%;
 }
+
+.circle-group-0-hidden .circle-group-0 {
+    opacity: 0% !important;
+}
+.circle-group-1-hidden .circle-group-1 {
+    opacity: 0% !important;
+}
+.circle-group-2-hidden .circle-group-2 {
+    opacity: 0% !important;
+}
+.circle-group-3-hidden .circle-group-3 {
+    opacity: 0% !important;
+}
+.circle-group-3-hidden .circle-group-3 {
+    opacity: 0% !important;
+}
+.circle-group-4-hidden .circle-group-4 {
+    opacity: 0% !important;
+}
+.circle-group-5-hidden .circle-group-5 {
+    opacity: 0% !important;
+}
+.circle-group-6-hidden .circle-group-6 {
+    opacity: 0% !important;
+}
+.circle-group-7-hidden .circle-group-7 {
+    opacity: 0% !important;
+}
+.circle-group-8-hidden .circle-group-8 {
+    opacity: 0% !important;
+}
+.circle-group-9-hidden .circle-group-9 {
+    opacity: 0% !important;
+}
+.circle-group-10-hidden .circle-group-10 {
+    opacity: 0% !important;
+}
+.circle-group-11-hidden .circle-group-11 {
+    opacity: 0% !important;
+}

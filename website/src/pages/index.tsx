@@ -62,9 +62,19 @@ const IndexPage = () => {
         }
     }, [selectedDatabase]);
 
+    let selectedSensorCSS = '';
+    if (data !== undefined && selectedSensors !== undefined) {
+        const sensorNames = uniq(data.map((d) => d['sensor'])).sort();
+        sensorNames.forEach((s, i) => {
+            if (!selectedSensors[s]) {
+                selectedSensorCSS += `circle-group-${i}-hidden `;
+            }
+        });
+    }
+
     return (
         <div className="w-full min-h-screen py-20 flex-col-center-top bg-slate-50">
-            <main className="w-full max-w-3xl flex-col-left gap-y-6">
+            <main className={'w-full max-w-3xl flex-col-left gap-y-6 ' + selectedSensorCSS}>
                 {databaseSchema !== undefined && (
                     <>
                         <DataSelector
@@ -90,7 +100,6 @@ const IndexPage = () => {
                                     )}
                                 </>
                             )}
-                        <div>{JSON.stringify(data)}</div>
                     </>
                 )}
             </main>
