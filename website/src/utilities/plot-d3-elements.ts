@@ -2,6 +2,7 @@ import { uniq, min, max } from 'lodash';
 import * as d3 from 'd3';
 
 // rose, purple, blue, teal, lime, orange
+// pink, violet, sky, emerald, yellow, red
 const COLORS = [
     '#f43f5e',
     '#a855f7',
