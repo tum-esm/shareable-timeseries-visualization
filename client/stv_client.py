@@ -141,7 +141,7 @@ class STVClient:
         assert len(sensor_name) <= 64, "sensor_name is longer than 64 characters"
 
         self.__validate_data_format(data)
-        now = datetime.now()
+        now = datetime.utcnow()
         date = now.strftime("%Y%m%d")
         hour = round(
             (
