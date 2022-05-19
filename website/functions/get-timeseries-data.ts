@@ -1,5 +1,10 @@
 import { Handler } from '@netlify/functions';
 import * as mysql from 'mysql';
+const HEADERS = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
+    'Content-Type': 'application/json',
+};
 
 const handler: Handler = (event, context, callback) => {
     var connection = mysql.createConnection({
@@ -16,6 +21,7 @@ const handler: Handler = (event, context, callback) => {
         callback(error.message, {
             statusCode: 400,
             body: JSON.stringify({ error }),
+            headers: HEADERS,
         });
     };
     const success = (results: any) => {
@@ -23,6 +29,7 @@ const handler: Handler = (event, context, callback) => {
         callback(undefined, {
             statusCode: 200,
             body: JSON.stringify(results),
+            headers: HEADERS,
         });
     };
 

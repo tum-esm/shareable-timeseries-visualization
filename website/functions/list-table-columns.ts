@@ -1,6 +1,12 @@
 import { Handler } from '@netlify/functions';
 import * as mysql from 'mysql';
 
+const HEADERS = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
+    'Content-Type': 'application/json',
+};
+
 const handler: Handler = (event, context, callback) => {
     var connection = mysql.createConnection({
         host: 'esm-mysql-public-do-user-7320955-0.b.db.ondigitalocean.com',
@@ -19,6 +25,7 @@ const handler: Handler = (event, context, callback) => {
                 callback(error.message, {
                     statusCode: 500,
                     body: JSON.stringify({ error }),
+                    headers: HEADERS,
                 });
             } else {
                 connection.end();
@@ -48,6 +55,7 @@ const handler: Handler = (event, context, callback) => {
                     callback(undefined, {
                         statusCode: 200,
                         body: JSON.stringify(column_response),
+                        headers: HEADERS,
                     });
                     return;
                 } else {
@@ -55,6 +63,7 @@ const handler: Handler = (event, context, callback) => {
                         'Table not in a valid state ("ID" and "hour" columns missing/invalid)',
                         {
                             statusCode: 400,
+                            headers: HEADERS,
                         }
                     );
                 }
