@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import DataSelector from '../components/data-selector';
+import PlotPanel from '../components/plot-panel';
 import backend from '../utilities/backend';
 
 const IndexPage = () => {
@@ -54,6 +55,12 @@ const IndexPage = () => {
                             }}
                         />
                         <div className="w-full h-px bg-slate-300" />
+                        {selectedDatabase !== undefined &&
+                            selectedTable !== undefined &&
+                            data !== undefined &&
+                            databaseSchema[selectedDatabase][selectedTable].map((column_name) => (
+                                <PlotPanel column_name={column_name} data={data} />
+                            ))}
                         <div>{JSON.stringify(data)}</div>
                     </>
                 )}
