@@ -52,6 +52,7 @@ class STVClient:
             + list(range(ord("a"), ord("z") + 1))
             + list(range(ord("0"), ord("9") + 1))
         )
+        assert len(self.data_columns) > 0, "at least 1 column required"
         try:
             for d in self.data_columns:
                 assert isinstance(d, str), "have to be a string"

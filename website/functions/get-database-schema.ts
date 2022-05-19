@@ -8,6 +8,14 @@ const HEADERS = {
     'Content-Type': 'application/json',
 };
 
+const column_exists = (
+    table_results: any,
+    column_name: string,
+    data_type: 'int' | 'float' | 'varchar'
+) =>
+    table_results.filter((r) => r['COLUMN_NAME'] === column_name && r['DATA_TYPE'] === data_type)
+        .length == 1;
+
 const handler: Handler = (event, context, callback) => {
     var connection = mysql.createConnection({
         host: 'esm-mysql-public-do-user-7320955-0.b.db.ondigitalocean.com',
@@ -19,12 +27,9 @@ const handler: Handler = (event, context, callback) => {
 
     connection.query(
         'SELECT table_schema, table_name, column_name, data_type ' +
-            'FROM information_schema.columns ' +
-            'WHERE ' +
-            "    (table_schema != 'information_schema') " +
-            '    AND ' +
-            "    (is_nullable = 'NO') " +
-            '    AND ( ' +
+            'FROM information_schema.columns WHERE ' +
+            "    (table_schema != 'information_schema') AND (is_nullable = 'NO') AND " +
+            '    ( ' +
             "        (column_name = 'ID' AND column_key = 'PRI' AND extra = 'auto_increment') " +
             '        OR ' +
             "        (column_name != 'ID' AND column_key = '' AND extra = '') " +
@@ -42,11 +47,7 @@ const handler: Handler = (event, context, callback) => {
                 });
             } else {
                 connection.end();
-                console.log({ results });
-
                 const database_names = uniq(results.map((r) => r['TABLE_SCHEMA']));
-                console.log({ database_names });
-
                 const tables = {};
                 database_names.forEach((database_name) => {
                     tables[database_name] = {};
@@ -56,27 +57,18 @@ const handler: Handler = (event, context, callback) => {
                             .map((r) => r['TABLE_NAME'])
                     );
                     table_names.forEach((table_name) => {
-                        let column_results = results.filter(
+                        let table_results = results.filter(
                             (r) =>
                                 r['TABLE_SCHEMA'] === database_name &&
                                 r['TABLE_NAME'] === table_name
                         );
-                        const column_exists = (
-                            column_name: string,
-                            data_type: 'int' | 'float' | 'varchar'
-                        ) =>
-                            column_results.filter(
-                                (r) =>
-                                    r['COLUMN_NAME'] === column_name && r['DATA_TYPE'] === data_type
-                            ).length == 1;
-
                         if (
-                            column_exists('ID', 'int') &&
-                            column_exists('date', 'int') &&
-                            column_exists('hour', 'float') &&
-                            column_exists('sensor', 'varchar')
+                            column_exists(table_results, 'ID', 'int') &&
+                            column_exists(table_results, 'date', 'int') &&
+                            column_exists(table_results, 'hour', 'float') &&
+                            column_exists(table_results, 'sensor', 'varchar')
                         ) {
-                            tables[database_name][table_name] = column_results
+                            const remaining_columns = table_results
                                 .filter(
                                     (r) =>
                                         !['ID', 'date', 'hour', 'sensor'].includes(
@@ -84,6 +76,10 @@ const handler: Handler = (event, context, callback) => {
                                         ) && r['DATA_TYPE'] === 'float'
                                 )
                                 .map((c) => c['COLUMN_NAME']);
+
+                            if (remaining_columns.length > 0) {
+                                tables[database_name][table_name] = remaining_columns;
+                            }
                         }
                     });
                 });
