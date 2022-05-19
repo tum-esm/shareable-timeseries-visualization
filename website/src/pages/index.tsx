@@ -15,6 +15,8 @@ const IndexPage = () => {
     const [selectedSensors, setSelectedSensors] = useState<{ [key: string]: boolean }>({});
     const [data, setData] = useState<{ [key: string]: string | number }[] | undefined>(undefined);
 
+    const [maxTime, setMaxTime] = useState<{ date: number; hour: number } | undefined>(undefined);
+
     async function loadDatabaseSchema() {
         setDatabaseSchema(await backend.getSchema());
     }
@@ -24,13 +26,14 @@ const IndexPage = () => {
             selectedDatabase !== undefined &&
             selectedTable !== undefined
         ) {
-            setData(
-                transformTimeseries.timeLabels(
-                    await backend.getData(selectedDatabase, selectedTable)
-                )
+            const { newMaxTime, newData } = transformTimeseries.mergeTimeColumns(
+                await backend.getData(selectedDatabase, selectedTable)
             );
+            setData(newData);
+            setMaxTime(newMaxTime);
         } else {
             setData(undefined);
+            setMaxTime(undefined);
         }
     }
 
@@ -89,6 +92,7 @@ const IndexPage = () => {
                                 setSelectedDatabase,
                                 selectedTable,
                                 setSelectedTable,
+                                maxTime,
                             }}
                         />
                         {selectedDatabase !== undefined &&
@@ -96,12 +100,29 @@ const IndexPage = () => {
                             selectedSensors !== undefined &&
                             data !== undefined && (
                                 <>
-                                    <SensorSelector {...{ selectedSensors, setSelectedSensors }} />
-                                    <div className="w-full h-px bg-slate-300" />
-                                    {databaseSchema[selectedDatabase][selectedTable].map(
-                                        (column_name) => (
-                                            <PlotPanel column_name={column_name} data={data} />
-                                        )
+                                    {data.length === 0 && (
+                                        <>
+                                            <div className="w-full h-px bg-slate-300" />
+                                            <div className="w-full text-lg text-center text-slate-700">
+                                                table is empty
+                                            </div>
+                                        </>
+                                    )}
+                                    {data.length > 0 && (
+                                        <>
+                                            <SensorSelector
+                                                {...{ selectedSensors, setSelectedSensors }}
+                                            />
+                                            <div className="w-full h-px bg-slate-300" />
+                                            {databaseSchema[selectedDatabase][selectedTable].map(
+                                                (column_name) => (
+                                                    <PlotPanel
+                                                        column_name={column_name}
+                                                        data={data}
+                                                    />
+                                                )
+                                            )}
+                                        </>
                                     )}
                                 </>
                             )}

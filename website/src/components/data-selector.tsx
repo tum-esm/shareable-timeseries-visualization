@@ -1,4 +1,5 @@
 import React from 'react';
+import transformTimeseries from '../utilities/transform-timeseries';
 
 function _Select(props: {
     label: string;
@@ -35,9 +36,10 @@ const DataSelector = (props: {
     setSelectedDatabase(s: string | undefined): void;
     selectedTable: string | undefined;
     setSelectedTable(s: string | undefined): void;
+    maxTime: { date: number; hour: number } | undefined;
 }) => {
     return (
-        <div className="w-full flex-row-left gap-x-2">
+        <div className="w-full flex-row-left-bottom gap-x-2">
             {Object.keys(props.databaseSchema).length > 0 && (
                 <_Select
                     label="database"
@@ -61,6 +63,13 @@ const DataSelector = (props: {
                         <div>No tables found</div>
                     )}
                 </>
+            )}
+            <div className="flex-grow" />
+            {props.maxTime !== undefined && (
+                <div className="text-sm h-7 text-slate-900">
+                    <span className="opacity-60">Newest data:</span> {props.maxTime.date},{' '}
+                    {transformTimeseries.renderTimeLabel(props.maxTime.hour)} (UTC)
+                </div>
             )}
         </div>
     );

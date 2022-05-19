@@ -1,5 +1,6 @@
 import { uniq, min, max, range } from 'lodash';
 import * as d3 from 'd3';
+import transformTimeseries from './transform-timeseries';
 
 // rose, purple, blue, teal, lime, orange
 // pink, violet, sky, emerald, yellow, red
@@ -31,10 +32,7 @@ export const plotCircles = (
     const minX: any = maxX - 2;
     const deltaX = maxX - minX;
 
-    const xScale: (x: number) => number = d3
-        .scaleLinear()
-        .domain([minX - 0.1 * deltaX, maxX + 0.1 * deltaX])
-        .range([50, 380]);
+    const xScale: (x: number) => number = d3.scaleLinear().domain([minX, maxX]).range([40, 380]);
     const yScale: (x: number) => number = d3
         .scaleLinear()
         .domain([maxY + 0.1 * deltaY, minY - 0.1 * deltaY])
@@ -76,30 +74,20 @@ export const plotCircles = (
             .attr('y', y + 2.5)
             .text(text);
     }
-    range(50, 381, 16.5).forEach((x, index) => {
-        _plotLine(x, x, 5, index % 4 == 0 ? 103.5 : 100, [50, 380].includes(x));
-        if (index % 4 === 0) {
+    range(40, 381, 17).forEach((x, index) => {
+        _plotLine(x, x, 5, 100, [40, 380].includes(x));
+        if (index % 5 === 0) {
             _plotLine(x, x, 100, 110, true);
-            let _xHour = minX + (index / 20.0) * deltaX;
-            if (_xHour < 0) {
-                _xHour += 24;
-            }
-            const _hours = Math.floor(_xHour);
-            const _minutes = Math.floor((_xHour - _hours) * 60);
-            const _seconds = Math.floor(((_xHour - _hours) * 60 - _minutes) * 60);
-            const _xLabel =
-                `${_hours.toString().padStart(2, '0')}:` +
-                `${_minutes.toString().padStart(2, '0')}:` +
-                `${_seconds.toString().padStart(2, '0')}`;
+            const _xLabel = transformTimeseries.renderTimeLabel(minX + (index / 20.0) * deltaX);
             _plotLabel(x, 117, _xLabel, 'middle');
         }
     });
     range(5, 101, 9.5).forEach((y, index) => {
-        _plotLine(50, 380, y, y, [5, 100].includes(y));
+        _plotLine(40, 380, y, y, [5, 100].includes(y));
         if (index % 2 === 0) {
-            _plotLine(46.5, 50, y, y, true);
+            _plotLine(36.5, 40, y, y, true);
             const _yLabel = maxY + 0.1 * deltaY - (index / 10.0) * 1.2 * deltaY;
-            _plotLabel(43, y, _yLabel.toFixed(3), 'end');
+            _plotLabel(33, y, _yLabel.toFixed(3), 'end');
         }
     });
 
@@ -115,7 +103,7 @@ export const plotCircles = (
         if (circleGroup.empty()) {
             circleGroup = svg
                 .append('g')
-                .attr('class', `circle-group-${index}`)
+                .attr('class', `circle-group-${index} z-10`)
                 .attr('fill', COLORS[index]);
         }
 
