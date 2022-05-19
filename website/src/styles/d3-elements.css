@@ -1,0 +1,3 @@
+svg g[class^='.circle'] {
+    opacity: 60%;
+}

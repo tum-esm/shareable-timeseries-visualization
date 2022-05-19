@@ -34,7 +34,7 @@ export default function PlotPanel(props: {
                     {maxY}
                 </div>
             </div>
-            <div className="w-full bg-red-200">
+            <div className="w-full">
                 <svg
                     className="relative z-0 w-full no-selection"
                     ref={d3Container}
