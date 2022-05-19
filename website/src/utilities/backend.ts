@@ -1,4 +1,4 @@
-const API = 'http://localhost:9999/.netlify/functions';
+const API = 'https://tueiesm-stv-api.netlify.app/.netlify/functions';
 
 const backend = {
     getSchema: async (): Promise<any> => {
