@@ -21,6 +21,9 @@ const IndexPage = () => {
         setDatabaseSchema(await backend.getSchema());
     }
     async function loadData() {
+        console.log('load data');
+        setData(undefined);
+        setMaxTime(undefined);
         if (
             databaseSchema !== undefined &&
             selectedDatabase !== undefined &&
@@ -31,9 +34,6 @@ const IndexPage = () => {
             );
             setData(newData);
             setMaxTime(newMaxTime);
-        } else {
-            setData(undefined);
-            setMaxTime(undefined);
         }
     }
 
@@ -75,14 +75,11 @@ const IndexPage = () => {
         });
     }
 
-    // TODO: Plot "last data" in UTC time
-    // TODO: Add "live" tag if last data is less than 3 minutes ago
-    // TODO: Plot "n data points in the last 2 hours"
-    // TODO: Hide page on small viewports
-
     return (
-        <div className="w-full min-h-screen py-20 flex-col-center-top bg-slate-50">
-            <main className={'w-full max-w-3xl flex-col-left gap-y-6 ' + selectedSensorCSS}>
+        <div className="w-full min-h-screen px-4 py-20 flex-col-center-top bg-slate-50">
+            <main
+                className={'hidden md:flex flex-col w-full max-w-3xl gap-y-6 ' + selectedSensorCSS}
+            >
                 {databaseSchema !== undefined && (
                     <>
                         <DataSelector
@@ -92,6 +89,7 @@ const IndexPage = () => {
                                 setSelectedDatabase,
                                 selectedTable,
                                 setSelectedTable,
+                                triggerRefresh: loadData,
                                 maxTime,
                             }}
                         />
@@ -129,6 +127,7 @@ const IndexPage = () => {
                     </>
                 )}
             </main>
+            <main className="md:hidden">Please view this page on a larger screen.</main>
         </div>
     );
 };

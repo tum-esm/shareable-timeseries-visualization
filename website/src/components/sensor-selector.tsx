@@ -31,13 +31,13 @@ function _Checkbox(props: {
                     aria-describedby="candidates-description"
                     name="candidates"
                     type="checkbox"
-                    className={'w-4 h-4 border-gray-300 rounded ' + COLORS[props.sensorIndex]}
+                    className={'w-4 h-4 border-slate-300 rounded ' + COLORS[props.sensorIndex]}
                     checked={props.value}
                     onClick={() => props.setValue(!props.value)}
                 />
             </div>
             <div className="ml-1.5 text-sm">
-                <label htmlFor="candidates" className="font-medium text-gray-700">
+                <label htmlFor="candidates" className="font-medium text-slate-700">
                     {props.label}
                 </label>
             </div>

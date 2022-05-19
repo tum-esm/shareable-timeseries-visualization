@@ -21,7 +21,7 @@ export default function PlotPanel(props: {
     }, [d3Container.current]);
 
     return (
-        <div className="w-full p-4 bg-white border border-gray-300 rounded-lg shadow-sm flex-col-center gap-y-2">
+        <div className="w-full p-4 bg-white border rounded-lg shadow-sm border-slate-300 flex-col-center gap-y-2">
             <div className="w-full flex-row-left gap-x-4">
                 <div className="font-semibold uppercase">{column_name}</div>
                 <div className="flex-grow" />

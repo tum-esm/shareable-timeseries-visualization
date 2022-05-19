@@ -40,8 +40,6 @@ export const plotCircles = (
 
     const sensorNames = uniq(data.map((d) => d['sensor'])).sort();
 
-    // TODO: Plot x and y axis and labels
-
     let lineGroup: any = svg.selectAll(`.line-group`);
     let labelGroup: any = svg.selectAll(`.label-group`);
     if (!lineGroup.empty()) {
@@ -51,8 +49,8 @@ export const plotCircles = (
         labelGroup.remove();
     }
 
-    lineGroup = svg.append('g').attr('class', `line-group fill-gray-600 z-0`);
-    labelGroup = svg.append('g').attr('class', `label-group text-gray-800 z-0`);
+    lineGroup = svg.append('g').attr('class', `line-group fill-slate-600 z-0`);
+    labelGroup = svg.append('g').attr('class', `label-group text-slate-800 z-0`);
     function _plotLine(x1: number, x2: number, y1: number, y2: number, bold: boolean) {
         lineGroup
             .append('line')
