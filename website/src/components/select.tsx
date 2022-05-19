@@ -3,21 +3,24 @@ import React from 'react';
 export default function Select(props: {
     label: string;
     options: string[];
-    selectedIndex: number | undefined;
-    setSelectedIndex(i: number): void;
+    selectedValue: string | undefined;
+    setSelectedValue(s: string | undefined): void;
 }) {
-    const { options, selectedIndex, setSelectedIndex } = props;
+    const { options, selectedValue, setSelectedValue } = props;
     return (
         <div>
             <label className="block text-sm font-medium text-gray-700">{props.label}</label>
             <select
                 name="location"
                 className="block w-full py-2 pl-3 pr-10 mt-1 text-base border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                value={selectedIndex !== undefined ? options[selectedIndex] : undefined}
-                onSelect={(e: any) => setSelectedIndex(options.findIndex(e.target.value))}
+                value={selectedValue}
+                onChange={(e: any) =>
+                    setSelectedValue(e.target.value !== '-' ? e.target.value : undefined)
+                }
             >
+                <option value={undefined}>-</option>
                 {options.map((v, i) => (
-                    <option key={v} value={i}>
+                    <option key={v} value={v}>
                         {v}
                     </option>
                 ))}

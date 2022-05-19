@@ -1,6 +1,5 @@
 import { Handler } from '@netlify/functions';
 import * as mysql from 'mysql';
-import { join } from 'path';
 const HEADERS = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',

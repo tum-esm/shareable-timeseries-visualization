@@ -2,39 +2,39 @@ import React from 'react';
 import Select from './select';
 
 const DataSelector = (props: {
-    databases: string[] | undefined;
-    databaseIndex: number | undefined;
-    setDatabaseIndex(i: number): void;
-    tables: string[] | undefined;
-    tableIndex: number | undefined;
-    setTableIndex(i: number): void;
-    columns: any;
+    databaseSchema: { [key: string]: { [key: string]: string[] } };
+    selectedDatabase: string | undefined;
+    setSelectedDatabase(s: string | undefined): void;
+    selectedTable: string | undefined;
+    setSelectedTable(s: string | undefined): void;
 }) => {
+    console.log({ props });
     return (
         <div className="w-full flex-row-left gap-x-2">
-            {props.databases === undefined && 'loading databases'}
-            {props.databases !== undefined &&
-                (props.databases.length > 0 ? (
-                    <Select
-                        label="database"
-                        options={props.databases}
-                        selectedIndex={props.databaseIndex}
-                        setSelectedIndex={props.setDatabaseIndex}
-                    />
-                ) : (
-                    <div>No databases found</div>
-                ))}
-            {props.tables !== undefined &&
-                (props.tables.length > 0 ? (
-                    <Select
-                        label="table"
-                        options={props.tables}
-                        selectedIndex={props.tableIndex}
-                        setSelectedIndex={props.setTableIndex}
-                    />
-                ) : (
-                    <div>No tables found</div>
-                ))}
+            {Object.keys(props.databaseSchema).length > 0 && (
+                <Select
+                    label="database"
+                    options={Object.keys(props.databaseSchema)}
+                    selectedValue={props.selectedDatabase}
+                    setSelectedValue={props.setSelectedDatabase}
+                />
+            )}
+            {Object.keys(props.databaseSchema).length == 0 && <div>No databases found</div>}
+            {props.selectedDatabase !== undefined && (
+                <>
+                    {Object.keys(props.databaseSchema[props.selectedDatabase]).length > 0 && (
+                        <Select
+                            label="table"
+                            options={Object.keys(props.databaseSchema[props.selectedDatabase])}
+                            selectedValue={props.selectedTable}
+                            setSelectedValue={props.setSelectedTable}
+                        />
+                    )}
+                    {Object.keys(props.databaseSchema[props.selectedDatabase]).length == 0 && (
+                        <div>No tables found</div>
+                    )}
+                </>
+            )}
         </div>
     );
 };

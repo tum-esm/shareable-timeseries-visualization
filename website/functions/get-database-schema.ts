@@ -84,9 +84,16 @@ const handler: Handler = (event, context, callback) => {
                     });
                 });
 
+                const final_tables = {};
+                Object.keys(tables).forEach((database_name) => {
+                    if (Object.keys(tables[database_name]).length > 0) {
+                        final_tables[database_name] = tables[database_name];
+                    }
+                });
+
                 callback(undefined, {
                     statusCode: 200,
-                    body: JSON.stringify(tables),
+                    body: JSON.stringify(final_tables),
                     headers: HEADERS,
                 });
             }
