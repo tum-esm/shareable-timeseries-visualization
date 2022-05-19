@@ -44,12 +44,17 @@ class STVClient:
         """
         reserved_keys = ["id", "date", "hour"]
         allowed_types = ["string", "float"]
+        allowed_ascii_values = (
+            [ord("_")]
+            + list(range(ord("a"), ord("z") + 1))
+            + list(range(ord("0"), ord("9") + 1))
+        )
         try:
             for key, data_type in self.schema.items():
                 assert isinstance(key, str), "key has to be a string"
                 assert all(
-                    [c == "_" or ord(c) in range(ord("a"), ord("z") + 1) for c in key]
-                ), "only lowercase letters and underscores allowed in keys"
+                    [ord(c) in allowed_ascii_values for c in key]
+                ), "only lowercase letters, underscores and numbers allowed in keys"
                 assert key not in reserved_keys, "the keys {reserved_keys} are reserved"
                 assert data_type in allowed_types, f"allowed datatypes: {allowed_types}"
         except AssertionError as e:
