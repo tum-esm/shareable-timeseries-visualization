@@ -72,6 +72,11 @@ const IndexPage = () => {
         });
     }
 
+    // TODO: Plot "last data" in UTC time
+    // TODO: Add "live" tag if last data is less than 3 minutes ago
+    // TODO: Plot "n data points in the last 2 hours"
+    // TODO: Hide page on small viewports
+
     return (
         <div className="w-full min-h-screen py-20 flex-col-center-top bg-slate-50">
             <main className={'w-full max-w-3xl flex-col-left gap-y-6 ' + selectedSensorCSS}>

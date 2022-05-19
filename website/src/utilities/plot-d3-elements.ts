@@ -39,9 +39,11 @@ export const plotCircles = (
         .domain([minY - 0.1 * deltaY, maxY + 0.1 * deltaY])
         .range([0, 120]);
 
-    const sensor_names = uniq(data.map((d) => d['sensor'])).sort();
+    const sensorNames = uniq(data.map((d) => d['sensor'])).sort();
 
-    sensor_names.forEach((sensorName, index) => {
+    // TODO: Plot x and y axis and labels
+
+    sensorNames.forEach((sensorName, index) => {
         if (index >= 12) {
             return;
         }
