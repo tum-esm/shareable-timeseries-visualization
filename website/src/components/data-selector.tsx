@@ -8,7 +8,6 @@ const DataSelector = (props: {
     selectedTable: string | undefined;
     setSelectedTable(s: string | undefined): void;
 }) => {
-    console.log({ props });
     return (
         <div className="w-full flex-row-left gap-x-2">
             {Object.keys(props.databaseSchema).length > 0 && (

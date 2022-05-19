@@ -1,6 +1,8 @@
+import { reduce, uniq } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import DataSelector from '../components/data-selector';
 import PlotPanel from '../components/plot-panel';
+import SensorSelector from '../components/sensor-selector';
 import backend from '../utilities/backend';
 import transformTimeseries from '../utilities/transform-timeseries';
 
@@ -10,6 +12,7 @@ const IndexPage = () => {
     >(undefined);
     const [selectedDatabase, setSelectedDatabase] = useState<string | undefined>(undefined);
     const [selectedTable, setSelectedTable] = useState<string | undefined>(undefined);
+    const [selectedSensors, setSelectedSensors] = useState<{ [key: string]: boolean }>({});
     const [data, setData] = useState<{ [key: string]: string | number }[] | undefined>(undefined);
 
     async function loadDatabaseSchema() {
@@ -30,6 +33,20 @@ const IndexPage = () => {
             setData(undefined);
         }
     }
+
+    useEffect(() => {
+        if (data !== undefined) {
+            setSelectedSensors(
+                reduce(
+                    uniq(data.map((d) => d['sensor'])),
+                    (prev, curr, index) => ({ ...prev, [curr]: true }),
+                    {}
+                )
+            );
+        } else {
+            setSelectedSensors({});
+        }
+    }, [data]);
 
     useEffect(() => {
         loadDatabaseSchema();
@@ -59,13 +76,20 @@ const IndexPage = () => {
                                 setSelectedTable,
                             }}
                         />
-                        <div className="w-full h-px bg-slate-300" />
                         {selectedDatabase !== undefined &&
                             selectedTable !== undefined &&
-                            data !== undefined &&
-                            databaseSchema[selectedDatabase][selectedTable].map((column_name) => (
-                                <PlotPanel column_name={column_name} data={data} />
-                            ))}
+                            selectedSensors !== undefined &&
+                            data !== undefined && (
+                                <>
+                                    <SensorSelector {...{ selectedSensors, setSelectedSensors }} />
+                                    <div className="w-full h-px bg-slate-300" />
+                                    {databaseSchema[selectedDatabase][selectedTable].map(
+                                        (column_name) => (
+                                            <PlotPanel column_name={column_name} data={data} />
+                                        )
+                                    )}
+                                </>
+                            )}
                         <div>{JSON.stringify(data)}</div>
                     </>
                 )}
