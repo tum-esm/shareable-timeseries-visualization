@@ -1,3 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+* {
+    @apply font-sans;
+}
+
+.flex-row-left {
+    @apply flex flex-row items-center justify-start;
+}
+
+.flex-row-left-bottom {
+    @apply flex flex-row items-end justify-start;
+}
+
+.flex-col-left {
+    @apply flex flex-col items-start justify-center;
+}

@@ -17,7 +17,7 @@ On website load:
 
 Settings entry:
 
-1. Host, user, password
+1. User, password
 2. Try to connect with host+user+password
 3. Load schema
 4. show select database-name: try to prefill from cookie
