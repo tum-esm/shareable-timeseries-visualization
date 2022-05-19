@@ -1,4 +1,4 @@
-import { uniq, min, max } from 'lodash';
+import { uniq, min, max, range } from 'lodash';
 import * as d3 from 'd3';
 
 // rose, purple, blue, teal, lime, orange
@@ -34,15 +34,53 @@ export const plotCircles = (
     const xScale: (x: number) => number = d3
         .scaleLinear()
         .domain([minX - 0.1 * deltaX, maxX + 0.1 * deltaX])
-        .range([0, 400]);
+        .range([50, 395]);
     const yScale: (x: number) => number = d3
         .scaleLinear()
-        .domain([minY - 0.1 * deltaY, maxY + 0.1 * deltaY])
-        .range([0, 120]);
+        .domain([maxY + 0.1 * deltaY, minY - 0.1 * deltaY])
+        .range([5, 100]);
 
     const sensorNames = uniq(data.map((d) => d['sensor'])).sort();
 
     // TODO: Plot x and y axis and labels
+
+    let lineGroup: any = svg.selectAll(`.line-group`);
+    let labelGroup: any = svg.selectAll(`.label-group`);
+    if (lineGroup.empty()) {
+        lineGroup = svg.append('g').attr('class', `line-group fill-gray-600`);
+        labelGroup = svg.append('g').attr('class', `label-group text-gray-800 text-xs`);
+        function _plotLine(x1: number, x2: number, y1: number, y2: number, bold: boolean) {
+            lineGroup
+                .append('line')
+                .attr('class', 'x-axis-line ' + (bold ? '' : 'opacity-60'))
+                .attr('stroke', '#334155')
+                .attr('stroke-linecap', 'round')
+                .attr('stroke-width', bold ? 1 : 0.5)
+                .attr('x1', x1)
+                .attr('x2', x2)
+                .attr('y1', y1)
+                .attr('y2', y2);
+        }
+        function _plotLabel(x: number, y: number, text: string) {
+            labelGroup
+                .append('text')
+                .style('text-anchor', 'end')
+                .attr('class', 'text-[0.45rem] font-mono')
+                .attr('x', x)
+                .attr('y', y + 2.5)
+                .text(text);
+        }
+        range(50, 396, 17.25).forEach((x, index) => {
+            _plotLine(x, x, 5, 100, [50, 395].includes(x));
+        });
+        range(5, 101, 9.5).forEach((y, index) => {
+            _plotLine(index % 2 === 0 ? 46.5 : 50, 395, y, y, [5, 100].includes(y));
+            if (index % 2 === 0) {
+                const _yLabel = maxY + 0.1 * deltaY - (index / 10.0) * 1.2 * deltaY;
+                _plotLabel(43, y, _yLabel.toFixed(3));
+            }
+        });
+    }
 
     sensorNames.forEach((sensorName, index) => {
         if (index >= 12) {
