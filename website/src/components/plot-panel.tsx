@@ -1,11 +1,17 @@
 import React from 'react';
 import { min, max } from 'lodash';
 
-export default function PlotPanel(props: { column_name: string; data: { [key: string]: any }[] }) {
+export default function PlotPanel(props: {
+    column_name: string;
+    data: { [key: string]: number | string }[];
+}) {
     const { column_name, data } = props;
 
-    const minY = min(data.map((d) => d[column_name]));
-    const maxY = max(data.map((d) => d[column_name]));
+    const minY: any = min(data.map((d) => d[column_name]));
+    const maxY: any = max(data.map((d) => d[column_name]));
+
+    const maxX: any = max(data.map((d) => d['hour']));
+    const minX: any = maxX - 2;
 
     return (
         <div className="w-full p-4 bg-white border border-gray-300 rounded-lg shadow-sm flex-col-center gap-y-2">

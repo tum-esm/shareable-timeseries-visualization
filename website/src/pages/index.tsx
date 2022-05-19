@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import DataSelector from '../components/data-selector';
 import PlotPanel from '../components/plot-panel';
 import backend from '../utilities/backend';
+import transformTimeseries from '../utilities/transform-timeseries';
 
 const IndexPage = () => {
     const [databaseSchema, setDatabaseSchema] = useState<
@@ -20,7 +21,11 @@ const IndexPage = () => {
             selectedDatabase !== undefined &&
             selectedTable !== undefined
         ) {
-            setData(await backend.getData(selectedDatabase, selectedTable));
+            setData(
+                transformTimeseries.timeLabels(
+                    await backend.getData(selectedDatabase, selectedTable)
+                )
+            );
         } else {
             setData(undefined);
         }
