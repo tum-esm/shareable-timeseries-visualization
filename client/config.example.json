@@ -1,8 +1,4 @@
 {
-    "sql": {
-        "user": "...",
-        "password": "...",
-        "database": "...",
-        "table": "..."
-    }
+    "mysql_user": "...",
+    "mysql_password": "..."
 }

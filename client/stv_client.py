@@ -12,8 +12,8 @@ class STVClient:
         try:
             with open(os.path.join(PROJECT_DIR, "config.json")) as f:
                 CONFIG = json.load(f)
-                SQL_USER = CONFIG["sql"]["user"]
-                SQL_PASSWORD = CONFIG["sql"]["password"]
+                SQL_USER = CONFIG["mysql_user"]
+                SQL_PASSWORD = CONFIG["mysql_password"]
                 assert isinstance(SQL_USER, str)
                 assert isinstance(SQL_PASSWORD, str)
         except (AssertionError, KeyError) as e:
