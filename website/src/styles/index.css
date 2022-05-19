@@ -10,6 +10,10 @@
     @apply flex flex-row items-center justify-start;
 }
 
+.flex-row-center {
+    @apply flex flex-row items-center justify-center;
+}
+
 .flex-row-left-bottom {
     @apply flex flex-row items-end justify-start;
 }

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import ColumnFilter from '../components/column-filter';
 import DataSelector from '../components/data-selector';
 import backend from '../utilities/backend';
 
@@ -16,7 +17,12 @@ const IndexPage = () => {
           }[]
         | undefined
     >(undefined);
-    const [data, setData] = useState<any | undefined>(undefined);
+    const [rawData, setRawData] = useState<{ [key: string]: string | number }[] | undefined>(
+        undefined
+    );
+    const [filteredData, setFilteredData] = useState<
+        { [key: string]: string | number }[] | undefined
+    >(undefined);
 
     console.log({ databaseIndex, tableIndex });
 
@@ -38,7 +44,7 @@ const IndexPage = () => {
             tableIndex !== undefined
         ) {
             setColumns(await backend.getColumns(databases[databaseIndex], tables[tableIndex]));
-            setData(await backend.getData(databases[databaseIndex], tables[tableIndex]));
+            setRawData(await backend.getData(databases[databaseIndex], tables[tableIndex]));
         }
     }
 
@@ -68,8 +74,15 @@ const IndexPage = () => {
                         columns,
                     }}
                 />
-                <div>{JSON.stringify(columns)}</div>
-                <div>{JSON.stringify(data)}</div>
+                {rawData !== undefined && columns !== undefined && (
+                    <ColumnFilter
+                        rawData={rawData}
+                        setFilteredData={setFilteredData}
+                        columns={columns}
+                    />
+                )}
+                <div className="w-full h-px bg-slate-300" />
+                <div>{JSON.stringify(filteredData)}</div>
             </main>
         </div>
     );
