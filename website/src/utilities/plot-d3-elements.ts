@@ -34,7 +34,7 @@ export const plotCircles = (
     const xScale: (x: number) => number = d3
         .scaleLinear()
         .domain([minX - 0.1 * deltaX, maxX + 0.1 * deltaX])
-        .range([50, 395]);
+        .range([50, 380]);
     const yScale: (x: number) => number = d3
         .scaleLinear()
         .domain([maxY + 0.1 * deltaY, minY - 0.1 * deltaY])
@@ -46,41 +46,62 @@ export const plotCircles = (
 
     let lineGroup: any = svg.selectAll(`.line-group`);
     let labelGroup: any = svg.selectAll(`.label-group`);
-    if (lineGroup.empty()) {
-        lineGroup = svg.append('g').attr('class', `line-group fill-gray-600`);
-        labelGroup = svg.append('g').attr('class', `label-group text-gray-800 text-xs`);
-        function _plotLine(x1: number, x2: number, y1: number, y2: number, bold: boolean) {
-            lineGroup
-                .append('line')
-                .attr('class', 'x-axis-line ' + (bold ? '' : 'opacity-60'))
-                .attr('stroke', '#334155')
-                .attr('stroke-linecap', 'round')
-                .attr('stroke-width', bold ? 1 : 0.5)
-                .attr('x1', x1)
-                .attr('x2', x2)
-                .attr('y1', y1)
-                .attr('y2', y2);
-        }
-        function _plotLabel(x: number, y: number, text: string) {
-            labelGroup
-                .append('text')
-                .style('text-anchor', 'end')
-                .attr('class', 'text-[0.45rem] font-mono')
-                .attr('x', x)
-                .attr('y', y + 2.5)
-                .text(text);
-        }
-        range(50, 396, 17.25).forEach((x, index) => {
-            _plotLine(x, x, 5, 100, [50, 395].includes(x));
-        });
-        range(5, 101, 9.5).forEach((y, index) => {
-            _plotLine(index % 2 === 0 ? 46.5 : 50, 395, y, y, [5, 100].includes(y));
-            if (index % 2 === 0) {
-                const _yLabel = maxY + 0.1 * deltaY - (index / 10.0) * 1.2 * deltaY;
-                _plotLabel(43, y, _yLabel.toFixed(3));
-            }
-        });
+    if (!lineGroup.empty()) {
+        lineGroup.remove();
     }
+    if (!labelGroup.empty()) {
+        labelGroup.remove();
+    }
+
+    lineGroup = svg.append('g').attr('class', `line-group fill-gray-600 z-0`);
+    labelGroup = svg.append('g').attr('class', `label-group text-gray-800 z-0`);
+    function _plotLine(x1: number, x2: number, y1: number, y2: number, bold: boolean) {
+        lineGroup
+            .append('line')
+            .attr('class', 'x-axis-line ' + (bold ? '' : 'opacity-[35%]'))
+            .attr('stroke', '#334155')
+            .attr('stroke-linecap', 'round')
+            .attr('stroke-width', bold ? 1 : 0.5)
+            .attr('x1', x1)
+            .attr('x2', x2)
+            .attr('y1', y1)
+            .attr('y2', y2);
+    }
+    function _plotLabel(x: number, y: number, text: string, align: 'middle' | 'end') {
+        labelGroup
+            .append('text')
+            .style('text-anchor', align)
+            .attr('class', 'text-[0.45rem] font-mono')
+            .attr('x', x)
+            .attr('y', y + 2.5)
+            .text(text);
+    }
+    range(50, 381, 16.5).forEach((x, index) => {
+        _plotLine(x, x, 5, index % 4 == 0 ? 103.5 : 100, [50, 380].includes(x));
+        if (index % 4 === 0) {
+            _plotLine(x, x, 100, 110, true);
+            let _xHour = minX + (index / 20.0) * deltaX;
+            if (_xHour < 0) {
+                _xHour += 24;
+            }
+            const _hours = Math.floor(_xHour);
+            const _minutes = Math.floor((_xHour - _hours) * 60);
+            const _seconds = Math.floor(((_xHour - _hours) * 60 - _minutes) * 60);
+            const _xLabel =
+                `${_hours.toString().padStart(2, '0')}:` +
+                `${_minutes.toString().padStart(2, '0')}:` +
+                `${_seconds.toString().padStart(2, '0')}`;
+            _plotLabel(x, 117, _xLabel, 'middle');
+        }
+    });
+    range(5, 101, 9.5).forEach((y, index) => {
+        _plotLine(50, 380, y, y, [5, 100].includes(y));
+        if (index % 2 === 0) {
+            _plotLine(46.5, 50, y, y, true);
+            const _yLabel = maxY + 0.1 * deltaY - (index / 10.0) * 1.2 * deltaY;
+            _plotLabel(43, y, _yLabel.toFixed(3), 'end');
+        }
+    });
 
     sensorNames.forEach((sensorName, index) => {
         if (index >= 12) {
