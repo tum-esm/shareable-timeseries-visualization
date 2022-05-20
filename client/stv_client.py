@@ -72,7 +72,9 @@ class STVClient:
         try:
             assert isinstance(data, dict), "pass data in dict format"
             for key, value in data.items():
-                assert isinstance(value, float | int), "only floats allowed"
+                assert isinstance(value, float) or isinstance(
+                    value, int
+                ), "only floats allowed"
                 assert key in self.data_columns, f'unknown key "{key}"'
             for key in self.data_columns:
                 assert key in data.keys(), f'key "{key}" missing in data'
