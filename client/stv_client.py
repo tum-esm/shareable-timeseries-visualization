@@ -1,5 +1,6 @@
 from datetime import datetime
 import sys
+from xmlrpc.client import boolean
 import mysql.connector
 import os
 import json
@@ -13,6 +14,7 @@ class STVClient:
         database_name: str,
         table_name: str,
         data_columns: list[str],
+        print_stuff: boolean = False,
     ):
         try:
             with open(os.path.join(PROJECT_DIR, "config.json")) as f:
@@ -27,6 +29,7 @@ class STVClient:
         self.database_name = database_name
         self.table_name = table_name
         self.data_columns = data_columns
+        self.print_stuff = print_stuff
         self.__validate_schema_format()
 
         self.connection: mysql.connector.MySQLConnection = mysql.connector.connect(
@@ -165,9 +168,10 @@ class STVClient:
                 + " VALUES "
                 + f"({date}, {hour}, '{sensor_name}', {', '.join(['%s']*len(keys))})"
             )
-            print(
-                f"SQL statement: \"{sql_statement.replace('%s', '{}').format(*values)}\""
-            )
+            if self.print_stuff:
+                print(
+                    f"SQL statement: \"{sql_statement.replace('%s', '{}').format(*values)}\""
+                )
             cursor.execute(sql_statement, values)
             self.connection.commit()
             assert cursor.rowcount == 1, "Row could not be inserted - reason unknown"
