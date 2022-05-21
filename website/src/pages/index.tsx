@@ -22,8 +22,6 @@ const IndexPage = () => {
     }
     async function loadData() {
         console.log('load data');
-        setData(undefined);
-        setMaxTime(undefined);
         if (
             databaseSchema !== undefined &&
             selectedDatabase !== undefined &&
@@ -39,7 +37,9 @@ const IndexPage = () => {
     }
 
     useEffect(() => {
-        if (data !== undefined) {
+        if (data === undefined) {
+            setSelectedSensors({});
+        } else {
             setSelectedSensors(
                 reduce(
                     uniq(data.map((d) => d['sensor'])),
@@ -47,8 +47,6 @@ const IndexPage = () => {
                     {}
                 )
             );
-        } else {
-            setSelectedSensors({});
         }
     }, [data]);
 
@@ -57,10 +55,13 @@ const IndexPage = () => {
     }, []);
 
     useEffect(() => {
+        setData(undefined);
+        setMaxTime(undefined);
         loadData();
     }, [selectedTable]);
 
     useEffect(() => {
+        setSelectedTable(undefined);
         if (selectedDatabase === undefined) {
             setSelectedTable(undefined);
         }
@@ -114,8 +115,9 @@ const IndexPage = () => {
                                             />
                                             <div className="w-full h-px bg-slate-300" />
                                             {databaseSchema[selectedDatabase][selectedTable].map(
-                                                (column_name) => (
+                                                (column_name, index) => (
                                                     <PlotPanel
+                                                        key={index}
                                                         column_name={column_name}
                                                         data={data}
                                                     />

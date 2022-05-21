@@ -33,7 +33,7 @@ function _Checkbox(props: {
                     type="checkbox"
                     className={'w-4 h-4 border-slate-300 rounded ' + COLORS[props.sensorIndex]}
                     checked={props.value}
-                    onClick={() => props.setValue(!props.value)}
+                    onChange={() => props.setValue(!props.value)}
                 />
             </div>
             <div className="ml-1.5 text-sm">

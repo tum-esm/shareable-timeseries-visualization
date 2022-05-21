@@ -21,8 +21,8 @@ const COLORS = [
 
 export const plotCircles = (
     svg: any,
-    data: { [key: string]: number | string }[],
-    column_name: string
+    column_name: string,
+    data: { [key: string]: number | string }[]
 ) => {
     const minY: any = min(data.map((d) => d[column_name]));
     const maxY: any = max(data.map((d) => d[column_name]));
@@ -89,6 +89,21 @@ export const plotCircles = (
         }
     });
 
+    let circleGroups: any = svg
+        .selectAll(`.circle-group`)
+        .data(range(0, min([sensorNames.length, 12])));
+    circleGroups
+        .enter()
+        .append('g')
+
+        // Keep all circles in sync with the data
+        .merge(circleGroups)
+        .attr('class', (index: number) => `circle-group circle-group-${index}`)
+        .attr('fill', (index: number) => COLORS[index]);
+
+    // Remove old circle group elements
+    circleGroups.exit().remove();
+
     sensorNames.forEach((sensorName, index) => {
         if (index >= 12) {
             return;
@@ -98,13 +113,6 @@ export const plotCircles = (
             .map((d) => ({ x: d['hour'], y: d[column_name] }));
 
         let circleGroup: any = svg.selectAll(`.circle-group-${index}`);
-        if (circleGroup.empty()) {
-            circleGroup = svg
-                .append('g')
-                .attr('class', `circle-group-${index} z-10`)
-                .attr('fill', COLORS[index]);
-        }
-
         let circles: any = circleGroup.selectAll(`circle`).data(sensorData);
         circles
             .enter()

@@ -13,12 +13,18 @@ export default function PlotPanel(props: {
 
     const d3Container = useRef(null);
 
-    useEffect(() => {
+    function plotD3stuff(column_name: string, data: { [key: string]: number | string }[]) {
         if (d3Container.current) {
-            const svg = d3.select(d3Container.current);
-            plotCircles(svg, data, column_name);
+            if (data.length > 0 && data[0][column_name] !== undefined) {
+                const svg = d3.select(d3Container.current);
+                plotCircles(svg, column_name, data);
+            }
         }
-    }, [d3Container.current]);
+    }
+
+    useEffect(() => {
+        plotD3stuff(column_name, data);
+    }, [d3Container.current, column_name, data]);
 
     return (
         <div className="w-full p-4 bg-white border rounded-lg shadow-sm border-slate-300 flex-col-center gap-y-2">
