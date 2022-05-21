@@ -37,7 +37,10 @@ def enforce_date_on_datapoint(date: int, datapoint: tuple):
 
 
 def get_schema(request):
-    cursor = connection.cursor()
+    try:
+        cursor = connection.cursor()
+    except mysql.connector.errors.OperationalError:
+        return JSONResponse({"message": "too many requests"}, status_code=500)
     cursor.execute(
         "SELECT table_schema, table_name, column_name, data_type "
         + "FROM information_schema.columns WHERE "
@@ -86,6 +89,8 @@ def get_schema(request):
                 clean_schema[database_name][table_name] = data_column_names
             except (AssertionError, KeyError) as e:
                 pass
+
+    cursor.close()
     return JSONResponse(clean_schema)
 
 
@@ -102,6 +107,10 @@ def get_data(request):
 
     try:
         cursor = connection.cursor()
+    except mysql.connector.errors.OperationalError:
+        return JSONResponse({"message": "too many requests"}, status_code=500)
+
+    try:
         cursor.execute(
             f"SELECT date, hour FROM {database_name}.{table_name} "
             + "ORDER BY date DESC, hour DESC LIMIT 1",
@@ -109,8 +118,11 @@ def get_data(request):
         )
         result_rows = cursor.fetchall()
     except mysql.connector.errors.ProgrammingError:
+        cursor.close()
         return JSONResponse({"message": "invalid database/table"}, status_code=400)
+
     if len(result_rows) == 0:
+        cursor.close()
         return JSONResponse([])
 
     # Starting with the newest measurement, return the newest 24 hours of data
@@ -125,10 +137,10 @@ def get_data(request):
         + ") ORDER BY date DESC, hour DESC",
         (),
     )
+    results = cursor.fetchall()
+    cursor.close()
     return JSONResponse(
-        list(
-            map(lambda d: enforce_date_on_datapoint(newest_date, d), cursor.fetchall())
-        )
+        list(map(lambda d: enforce_date_on_datapoint(newest_date, d), results))
     )
 
 
@@ -145,8 +157,13 @@ def get_meta_data(request):
 
     assert string_is_clean(database_name)
     assert string_is_clean(table_name)
+
     try:
         cursor = connection.cursor()
+    except mysql.connector.errors.OperationalError:
+        return JSONResponse({"message": "too many requests"}, status_code=500)
+
+    try:
         cursor.execute(
             "SELECT column_name, unit, description "
             + f"FROM {database_name}.column_meta_data WHERE "
@@ -154,8 +171,11 @@ def get_meta_data(request):
             (),
         )
         result_rows = cursor.fetchall()
+        cursor.close()
     except mysql.connector.errors.ProgrammingError:
+        cursor.close()
         return JSONResponse({"message": "invalid database/table"}, status_code=400)
+
     meta_data = {}
     for column_name, unit, description in result_rows:
         if unit == "null":
