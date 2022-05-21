@@ -4,6 +4,8 @@ from datetime import datetime, timedelta
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 from starlette.routing import Route
+from starlette.middleware import Middleware
+from starlette.middleware.cors import CORSMiddleware
 
 connection: mysql.connector.MySQLConnection = mysql.connector.connect(
     host="esm-mysql-public-do-user-7320955-0.b.db.ondigitalocean.com",
@@ -169,5 +171,6 @@ app = Starlette(
         Route("/schema", get_schema),
         Route("/data", get_data),
         Route("/meta-data", get_meta_data),
-    ]
+    ],
+    middleware=[Middleware(CORSMiddleware, allow_origins=["*"])],
 )
