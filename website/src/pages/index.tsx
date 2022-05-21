@@ -30,7 +30,8 @@ const IndexPage = () => {
             selectedTable !== undefined
         ) {
             const { newMaxTime, newData } = transformTimeseries.mergeTimeColumns(
-                await backend.getData(selectedDatabase, selectedTable)
+                await backend.getData(selectedDatabase, selectedTable),
+                databaseSchema[selectedDatabase][selectedTable]
             );
             setData(newData);
             setMaxTime(newMaxTime);
