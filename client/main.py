@@ -15,6 +15,7 @@ def example_procedure():
         data_columns=["y1", "y2"],
         units={"y2": "ppb"},
         descriptions={"y1": "any description you want"},
+        print_stuff=True,
     )
 
     print("latest 10 records: ", client.get_latest_n_records(10))
@@ -23,7 +24,7 @@ def example_procedure():
         try:
             for sensor_name in ["sensor-1", "sensor-2", "sensor-3"]:
                 client.insert_data(
-                    sensor_name, {"y1": rnd(90, 110), "y2": rnd(1.7, 1.95)}
+                    sensor_name, {"y1_ppm": rnd(90, 110), "y2_ppb": rnd(1.7, 1.95)}
                 )
             time.sleep(3)
         except KeyboardInterrupt:

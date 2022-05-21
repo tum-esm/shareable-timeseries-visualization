@@ -14,6 +14,7 @@ class STVClient:
         data_columns: list[str],
         units: dict[str, str] = None,
         descriptions: dict[str, str] = None,
+        print_stuff: bool = False,
     ):
         try:
             with open(os.path.join(PROJECT_DIR, "config.json")) as f:
@@ -30,6 +31,7 @@ class STVClient:
         self.data_columns = data_columns
         self.units = units
         self.descriptions = descriptions
+        self.print_stuff = print_stuff
         self.__validate_schema_format()
 
         self.connection: mysql.connector.MySQLConnection = mysql.connector.connect(
@@ -93,7 +95,9 @@ class STVClient:
         try:
             assert isinstance(data, dict), "pass data in dict format"
             for key, value in data.items():
-                assert isinstance(value, float | int), "only floats allowed"
+                assert isinstance(value, float) or isinstance(
+                    value, int
+                ), "only floats allowed"
                 assert key in self.data_columns, f'unknown key "{key}"'
             for key in self.data_columns:
                 assert key in data.keys(), f'key "{key}" missing in data'
@@ -219,9 +223,10 @@ class STVClient:
                 + " VALUES "
                 + f"({date}, {hour}, '{sensor_name}', {', '.join(['%s']*len(keys))})"
             )
-            print(
-                f"SQL statement: \"{sql_statement.replace('%s', '{}').format(*values)}\""
-            )
+            if self.print_stuff:
+                print(
+                    f"SQL statement: \"{sql_statement.replace('%s', '{}').format(*values)}\""
+                )
             cursor.execute(sql_statement, values)
             self.connection.commit()
             assert cursor.rowcount == 1, "Row could not be inserted - reason unknown"
