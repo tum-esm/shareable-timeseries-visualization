@@ -14,13 +14,20 @@ const IndexPage = () => {
     const [selectedTable, setSelectedTable] = useState<string | undefined>(undefined);
     const [selectedSensors, setSelectedSensors] = useState<{ [key: string]: boolean }>({});
     const [data, setData] = useState<{ [key: string]: string | number }[] | undefined>(undefined);
+    const [metaData, setMetaData] = useState<
+        { [key: string]: { unit: string | null; description: string | null } } | undefined
+    >(undefined);
 
     const [maxTime, setMaxTime] = useState<{ date: number; hour: number } | undefined>(undefined);
 
+    // TODO: How to deal with non 200 responses from backend?
     async function loadDatabaseSchema() {
         setDatabaseSchema(await backend.getSchema());
     }
     async function loadData() {
+        setData(undefined);
+        setMaxTime(undefined);
+        setMetaData(undefined);
         console.log('load data');
         if (
             databaseSchema !== undefined &&
@@ -33,6 +40,7 @@ const IndexPage = () => {
             );
             setData(newData);
             setMaxTime(newMaxTime);
+            setMetaData(await backend.getMetaData(selectedDatabase, selectedTable));
         }
     }
 
@@ -55,8 +63,6 @@ const IndexPage = () => {
     }, []);
 
     useEffect(() => {
-        setData(undefined);
-        setMaxTime(undefined);
         loadData();
     }, [selectedTable]);
 
@@ -82,6 +88,9 @@ const IndexPage = () => {
             <main
                 className={'hidden md:flex flex-col w-full max-w-3xl gap-y-6 ' + selectedSensorCSS}
             >
+                {databaseSchema === undefined && (
+                    <div className="w-full text-center">loading schema ...</div>
+                )}
                 {databaseSchema !== undefined && (
                     <>
                         <DataSelector
@@ -98,7 +107,8 @@ const IndexPage = () => {
                         {selectedDatabase !== undefined &&
                             selectedTable !== undefined &&
                             selectedSensors !== undefined &&
-                            data !== undefined && (
+                            data !== undefined &&
+                            metaData !== undefined && (
                                 <>
                                     {data.length === 0 && (
                                         <>
@@ -120,6 +130,7 @@ const IndexPage = () => {
                                                         key={index}
                                                         column_name={column_name}
                                                         data={data}
+                                                        metaData={metaData}
                                                     />
                                                 )
                                             )}

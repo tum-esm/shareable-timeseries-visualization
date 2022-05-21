@@ -18,6 +18,10 @@
     @apply flex flex-row items-end justify-start;
 }
 
+.flex-row-left-top {
+    @apply flex flex-row items-start justify-start;
+}
+
 .flex-col-left {
     @apply flex flex-col items-start justify-center;
 }
