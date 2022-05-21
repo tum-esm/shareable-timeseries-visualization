@@ -6,7 +6,9 @@ authors = ["Moritz Makowski <moritz.makowski@tum.de>"]
 
 [tool.poetry.dependencies]
 python = "3.9"
-mysql-connector-python = "^8.0.29"
+mysql-connector-python = "8.0.29"
+uvicorn = "0.17.6"
+starlette = "^0.20.0"
 
 [tool.poetry.dev-dependencies]
 black = "22.3.0"
