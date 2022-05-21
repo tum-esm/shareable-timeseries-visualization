@@ -1,5 +1,4 @@
 from datetime import datetime
-import sys
 import mysql.connector
 import os
 import json
@@ -13,6 +12,8 @@ class STVClient:
         database_name: str,
         table_name: str,
         data_columns: list[str],
+        units: dict[str, str] = None,
+        descriptions: dict[str, str] = None,
     ):
         try:
             with open(os.path.join(PROJECT_DIR, "config.json")) as f:
@@ -27,6 +28,8 @@ class STVClient:
         self.database_name = database_name
         self.table_name = table_name
         self.data_columns = data_columns
+        self.units = units
+        self.descriptions = descriptions
         self.__validate_schema_format()
 
         self.connection: mysql.connector.MySQLConnection = mysql.connector.connect(
@@ -41,6 +44,8 @@ class STVClient:
         elif not self.__table_schemas_match():
             self.__drop_table()
             self.__create_table()
+
+        self.__update_meta_data()
 
     def __validate_schema_format(self):
         """
@@ -64,6 +69,22 @@ class STVClient:
         except AssertionError as e:
             raise Exception(f"Invalid column names: {e}")
 
+        for column_name in self.data_columns:
+            if column_name not in self.units.keys():
+                self.units[column_name] = None
+            if column_name not in self.descriptions.keys():
+                self.descriptions[column_name] = None
+
+        try:
+            assert len(self.units.keys()) == len(
+                self.data_columns
+            ), "unknown key(s) in units"
+            assert len(self.descriptions.keys()) == len(
+                self.data_columns
+            ), "unknown key(s) in descriptions"
+        except AssertionError as e:
+            raise Exception(f"Invalid meta data: {e}")
+
     def __validate_data_format(self, data: dict[str, float]):
         """
         Checks, whether the data is in the correct format with respect to the
@@ -82,7 +103,11 @@ class STVClient:
     def __drop_table(self):
         if input("schema has changed! drop the existing table? (y) ").startswith("y"):
             cursor = self.connection.cursor()
-            cursor.execute(f"DROP TABLE {self.table_name}", ())
+            cursor.execute(
+                f"DROP TABLE {self.table_name}; "
+                + f"DELETE FROM column_meta_data WHERE table_name={self.table_name}",
+                (),
+            )
             self.connection.commit()
             print(f"table {self.table_name} dropped")
         else:
@@ -95,17 +120,48 @@ class STVClient:
         cursor = self.connection.cursor()
         columns = [f"{c} FLOAT NOT NULL" for c in self.data_columns]
         sql_statement = (
-            f"CREATE TABLE {self.table_name} ("
-            + "ID INT NOT NULL AUTO_INCREMENT, "
-            + "date INT NOT NULL, "
-            + "hour FLOAT NOT NULL, "
-            + "sensor VARCHAR(64) NOT NULL, "
-            + f"{' ,'.join(columns)}"
-            + ", PRIMARY KEY (ID));"
+            f"CREATE TABLE {self.table_name} ( "
+            + "    ID INT NOT NULL AUTO_INCREMENT, "
+            + "    date INT NOT NULL, "
+            + "    hour FLOAT NOT NULL, "
+            + "    sensor VARCHAR(64) NOT NULL, "
+            + f"   {' ,'.join(columns)}, "
+            + "    PRIMARY KEY (ID)"
+            + "); "
         )
         cursor.execute(sql_statement, ())
+        for column_name in self.data_columns:
+            sql_statement = (
+                f"INSERT INTO column_meta_data "
+                + f"(table_name, column_name, unit, description) "
+                + " VALUES "
+                + f"('{self.table_name}', '{column_name}', null, null)"
+            )
+            print("sql_statement:", sql_statement)
+            cursor.execute(sql_statement, ())
+
         self.connection.commit()
         print(f"table {self.table_name} created: {sql_statement}")
+
+    def __update_meta_data(self):
+        """
+        Creates the required table based on the give schema.
+        """
+        cursor = self.connection.cursor()
+        for column_name in self.data_columns:
+            unit_string = self.units[column_name]
+            description_string = self.descriptions[column_name]
+            if unit_string is None:
+                unit_string = "null"
+            if description_string is None:
+                description_string = "null"
+            sql_statement = (
+                f"UPDATE column_meta_data SET "
+                + f"unit='{unit_string}', description='{description_string}' "
+                + f"WHERE table_name='{self.table_name}' AND column_name='{column_name}'"
+            )
+            cursor.execute(sql_statement, ())
+        self.connection.commit()
 
     def __table_exists(self):
         """

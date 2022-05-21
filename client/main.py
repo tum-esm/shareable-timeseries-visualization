@@ -13,6 +13,8 @@ def example_procedure():
         database_name="airquality_course",
         table_name="test_data",
         data_columns=["y1", "y2"],
+        units={"y2": "ppb"},
+        descriptions={"y1": "any description you want"},
     )
 
     print("latest 10 records: ", client.get_latest_n_records(10))
