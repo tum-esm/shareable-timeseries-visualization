@@ -16,6 +16,8 @@ export const CONSTANTS: {
     PLOT_Y_MIN: number;
     PLOT_Y_MAX: number;
     TIMES: TYPES.TimeBucket[];
+    HOUR_FRACTIONS: { [key in TYPES.TimeBucket]: number };
+    CIRCLE_RADII: { [key in TYPES.TimeBucket]: number };
 } = {
     API: 'https://stv-backend-iwtvwmhnyq-ew.a.run.app',
     HEX_COLORS: [
@@ -64,4 +66,18 @@ export const CONSTANTS: {
     PLOT_Y_MIN: 5,
     PLOT_Y_MAX: 130,
     TIMES: ['10 minutes', '30 minutes', '2 hours', '6 hours', '24 hours'],
+    HOUR_FRACTIONS: {
+        '10 minutes': 0.1666666,
+        '30 minutes': 0.5,
+        '2 hours': 2,
+        '6 hours': 6,
+        '24 hours': 24,
+    },
+    CIRCLE_RADII: {
+        '10 minutes': 2,
+        '30 minutes': 1.75,
+        '2 hours': 1.25,
+        '6 hours': 1,
+        '24 hours': 0.75,
+    },
 };

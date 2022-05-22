@@ -109,6 +109,7 @@ const IndexPage = () => {
         }
     }, [selectedDatabase]);
 
+    let selectedTimeCSS = `time-bucket-${selectedTime.replace(' ', '-')}`;
     let selectedSensorCSS = '';
     if (allData !== undefined && selectedSensors !== undefined) {
         const sensorNames = uniq(allData.map((d) => d['sensor'])).sort();
@@ -124,11 +125,11 @@ const IndexPage = () => {
         selectedDatabase !== undefined &&
         selectedTable !== undefined &&
         selectedSensors !== undefined &&
-        timeFramedData !== undefined &&
+        allData !== undefined &&
         metaData !== undefined &&
         reduce(
             databaseSchema[selectedDatabase][selectedTable],
-            (prev, curr, _) => prev && timeFramedData[0][curr] !== undefined,
+            (prev, curr, _) => prev && allData[0][curr] !== undefined,
             true
         );
 
@@ -137,7 +138,8 @@ const IndexPage = () => {
             <main
                 className={
                     'hidden md:flex flex-col w-full max-w-5xl gap-y-6 ' +
-                    selectedSensorCSS
+                    selectedSensorCSS +
+                    selectedTimeCSS
                 }
             >
                 {databaseSchema === undefined && (
@@ -165,7 +167,7 @@ const IndexPage = () => {
                             )}
                         {stateIsComplete && (
                             <>
-                                {timeFramedData.length === 0 && (
+                                {allData.length === 0 && (
                                     <>
                                         <div className="w-full h-px bg-slate-300" />
                                         <div className="w-full text-lg text-center text-slate-700">
@@ -173,7 +175,7 @@ const IndexPage = () => {
                                         </div>
                                     </>
                                 )}
-                                {timeFramedData.length > 0 && (
+                                {allData.length > 0 && (
                                     <>
                                         <div className="w-full h-px bg-slate-300" />
                                         <SensorSelector
@@ -189,7 +191,7 @@ const IndexPage = () => {
                                             <PlotPanel
                                                 key={index}
                                                 column_name={column_name}
-                                                data={timeFramedData}
+                                                data={allData}
                                                 metaData={metaData}
                                                 selectedSensors={selectedSensors}
                                             />

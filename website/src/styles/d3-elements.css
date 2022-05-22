@@ -41,3 +41,78 @@ svg g[class^='.circle'] {
 .circle-group-11-hidden .circle-group-11 {
     opacity: 0% !important;
 }
+
+.time-bucket-10-minutes .line-group-30-minutes,
+.time-bucket-10-minutes .label-group-30-minutes,
+.time-bucket-10-minutes .circle-group-30-minutes,
+.time-bucket-10-minutes .line-group-2-hours,
+.time-bucket-10-minutes .label-group-2-hours,
+.time-bucket-10-minutes .circle-group-2-hours,
+.time-bucket-10-minutes .line-group-6-hours,
+.time-bucket-10-minutes .label-group-6-hours,
+.time-bucket-10-minutes .circle-group-6-hours,
+.time-bucket-10-minutes .line-group-24-hours,
+.time-bucket-10-minutes .label-group-24-hours,
+.time-bucket-10-minutes .circle-group-24-hours {
+    opacity: 0% !important;
+}
+
+.time-bucket-30-minutes .line-group-10-minutes,
+.time-bucket-30-minutes .label-group-10-minutes,
+.time-bucket-30-minutes .circle-group-10-minutes,
+.time-bucket-30-minutes .line-group-2-hours,
+.time-bucket-30-minutes .label-group-2-hours,
+.time-bucket-30-minutes .circle-group-2-hours,
+.time-bucket-30-minutes .line-group-6-hours,
+.time-bucket-30-minutes .label-group-6-hours,
+.time-bucket-30-minutes .circle-group-6-hours,
+.time-bucket-30-minutes .line-group-24-hours,
+.time-bucket-30-minutes .label-group-24-hours,
+.time-bucket-30-minutes .circle-group-24-hours {
+    opacity: 0% !important;
+}
+
+.time-bucket-2-hours .line-group-10-minutes,
+.time-bucket-2-hours .label-group-10-minutes,
+.time-bucket-2-hours .circle-group-10-minutes,
+.time-bucket-2-hours .line-group-30-minutes,
+.time-bucket-2-hours .label-group-30-minutes,
+.time-bucket-2-hours .circle-group-30-minutes,
+.time-bucket-2-hours .line-group-6-hours,
+.time-bucket-2-hours .label-group-6-hours,
+.time-bucket-2-hours .circle-group-6-hours,
+.time-bucket-2-hours .line-group-24-hours,
+.time-bucket-2-hours .label-group-24-hours,
+.time-bucket-2-hours .circle-group-24-hours {
+    opacity: 0% !important;
+}
+
+.time-bucket-6-hours .line-group-10-minutes,
+.time-bucket-6-hours .label-group-10-minutes,
+.time-bucket-6-hours .circle-group-10-minutes,
+.time-bucket-6-hours .line-group-30-minutes,
+.time-bucket-6-hours .label-group-30-minutes,
+.time-bucket-6-hours .circle-group-30-minutes,
+.time-bucket-6-hours .line-group-2-hours,
+.time-bucket-6-hours .label-group-2-hours,
+.time-bucket-6-hours .circle-group-2-hours,
+.time-bucket-6-hours .line-group-24-hours,
+.time-bucket-6-hours .label-group-24-hours,
+.time-bucket-6-hours .circle-group-24-hours {
+    opacity: 0% !important;
+}
+
+.time-bucket-24-hours .line-group-10-minutes,
+.time-bucket-24-hours .label-group-10-minutes,
+.time-bucket-24-hours .circle-group-10-minutes,
+.time-bucket-24-hours .line-group-30-minutes,
+.time-bucket-24-hours .label-group-30-minutes,
+.time-bucket-24-hours .circle-group-30-minutes,
+.time-bucket-24-hours .line-group-2-hours,
+.time-bucket-24-hours .label-group-2-hours,
+.time-bucket-24-hours .circle-group-2-hours,
+.time-bucket-24-hours .line-group-6-hours,
+.time-bucket-24-hours .label-group-6-hours,
+.time-bucket-24-hours .circle-group-6-hours {
+    opacity: 0% !important;
+}
