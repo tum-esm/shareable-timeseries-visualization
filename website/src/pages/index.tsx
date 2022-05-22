@@ -21,9 +21,13 @@ const IndexPage = () => {
         {}
     );
     const [selectedTime, setSelectedTime] = useState<TimeBucket>('10 minutes');
-    const [data, setData] = useState<{ [key: string]: string | number }[] | undefined>(
-        undefined
-    );
+    const [allData, setAllData] = useState<
+        { [key: string]: string | number }[] | undefined
+    >(undefined);
+    const [timeFramedData, setTimeFramedData] = useState<
+        { [key: string]: string | number }[] | undefined
+    >(undefined);
+
     const [metaData, setMetaData] = useState<
         | { [key: string]: { unit: string | null; description: string | null } }
         | undefined
@@ -38,7 +42,8 @@ const IndexPage = () => {
         setDatabaseSchema(await backend.getSchema());
     }
     async function loadData() {
-        setData(undefined);
+        setAllData(undefined);
+        setTimeFramedData(undefined);
         setMaxTime(undefined);
         setMetaData(undefined);
         console.log('load data');
@@ -51,25 +56,42 @@ const IndexPage = () => {
                 await backend.getData(selectedDatabase, selectedTable),
                 databaseSchema[selectedDatabase][selectedTable]
             );
-            setData(newData);
+            setAllData(newData);
             setMaxTime(newMaxTime);
             setMetaData(await backend.getMetaData(selectedDatabase, selectedTable));
         }
     }
 
     useEffect(() => {
-        if (data === undefined) {
+        if (allData !== undefined && maxTime !== undefined) {
+            const hourFraction = {
+                '10 minutes': 0.1666666,
+                '30 minutes': 0.5,
+                '2 hours': 2,
+                '6 hours': 6,
+                '24 hours': 24,
+            };
+            setTimeFramedData(
+                allData.filter(
+                    (d) => d['hour'] >= maxTime.hour - hourFraction[selectedTime]
+                )
+            );
+        }
+    }, [allData, selectedTime, maxTime]);
+
+    useEffect(() => {
+        if (allData === undefined) {
             setSelectedSensors({});
         } else {
             setSelectedSensors(
                 reduce(
-                    uniq(data.map((d) => d['sensor'])),
+                    uniq(allData.map((d) => d['sensor'])),
                     (prev, curr, index) => ({ ...prev, [curr]: true }),
                     {}
                 )
             );
         }
-    }, [data]);
+    }, [allData]);
 
     useEffect(() => {
         loadDatabaseSchema();
@@ -87,8 +109,8 @@ const IndexPage = () => {
     }, [selectedDatabase]);
 
     let selectedSensorCSS = '';
-    if (data !== undefined && selectedSensors !== undefined) {
-        const sensorNames = uniq(data.map((d) => d['sensor'])).sort();
+    if (allData !== undefined && selectedSensors !== undefined) {
+        const sensorNames = uniq(allData.map((d) => d['sensor'])).sort();
         sensorNames.forEach((s, i) => {
             if (!selectedSensors[s]) {
                 selectedSensorCSS += `circle-group-${i}-hidden `;
@@ -101,11 +123,11 @@ const IndexPage = () => {
         selectedDatabase !== undefined &&
         selectedTable !== undefined &&
         selectedSensors !== undefined &&
-        data !== undefined &&
+        timeFramedData !== undefined &&
         metaData !== undefined &&
         reduce(
             databaseSchema[selectedDatabase][selectedTable],
-            (prev, curr, _) => prev && data[0][curr] !== undefined,
+            (prev, curr, _) => prev && timeFramedData[0][curr] !== undefined,
             true
         );
 
@@ -142,7 +164,7 @@ const IndexPage = () => {
                             )}
                         {stateIsComplete && (
                             <>
-                                {data.length === 0 && (
+                                {timeFramedData.length === 0 && (
                                     <>
                                         <div className="w-full h-px bg-slate-300" />
                                         <div className="w-full text-lg text-center text-slate-700">
@@ -150,7 +172,7 @@ const IndexPage = () => {
                                         </div>
                                     </>
                                 )}
-                                {data.length > 0 && (
+                                {timeFramedData.length > 0 && (
                                     <>
                                         <div className="w-full h-px bg-slate-300" />
                                         <SensorSelector
@@ -166,7 +188,7 @@ const IndexPage = () => {
                                             <PlotPanel
                                                 key={index}
                                                 column_name={column_name}
-                                                data={data}
+                                                data={timeFramedData}
                                                 metaData={metaData}
                                                 selectedSensors={selectedSensors}
                                             />
