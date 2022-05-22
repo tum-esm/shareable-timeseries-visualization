@@ -1,5 +1,6 @@
 import React from 'react';
 import transformTimeseries from '../utilities/transform-timeseries';
+import icons from '../assets/icons';
 
 function _Select(props: {
     label: string;
@@ -34,10 +35,10 @@ function _RefreshButton(props: { onClick(): void }) {
     return (
         <button
             name="location"
-            className="px-3 py-2 text-base bg-white border rounded-md border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="p-1.5 text-base bg-white border rounded-md border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-slate-800"
             onClick={props.onClick}
         >
-            refresh
+            <div className="w-5 h-5 p-0.5">{icons.refresh}</div>
         </button>
     );
 }

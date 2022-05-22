@@ -86,7 +86,7 @@ const IndexPage = () => {
     return (
         <div className="w-full min-h-screen px-4 py-20 flex-col-center-top bg-slate-50">
             <main
-                className={'hidden md:flex flex-col w-full max-w-3xl gap-y-6 ' + selectedSensorCSS}
+                className={'hidden md:flex flex-col w-full max-w-5xl gap-y-6 ' + selectedSensorCSS}
             >
                 {databaseSchema === undefined && (
                     <div className="w-full text-center">loading schema ...</div>
