@@ -11,6 +11,7 @@ export const CONSTANTS: {
     API: string;
     HEX_COLORS: string[];
     TEXT_COLORS: string[];
+    TEXT_COLORS_LIGHT: string[];
     FOCUS_COLORS: string[];
     SVG_HEIGHT: number;
     PLOT_Y_MIN: number;
@@ -47,6 +48,20 @@ export const CONSTANTS: {
         'text-emerald-600',
         'text-yellow-600',
         'text-red-600',
+    ],
+    TEXT_COLORS_LIGHT: [
+        'text-rose-300',
+        'text-purple-300',
+        'text-blue-300',
+        'text-teal-300',
+        'text-lime-300',
+        'text-orange-300',
+        'text-pink-300',
+        'text-violet-300',
+        'text-sky-300',
+        'text-emerald-300',
+        'text-yellow-300',
+        'text-red-300',
     ],
     FOCUS_COLORS: [
         'focus:ring-rose-500',
