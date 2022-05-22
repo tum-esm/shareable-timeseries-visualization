@@ -3,8 +3,11 @@ import React, { useEffect, useState } from 'react';
 import DataSelector from '../components/data-selector';
 import PlotPanel from '../components/plot-panel';
 import SensorSelector from '../components/sensor-selector';
+import TimeSelector from '../components/time-selector';
 import backend from '../utilities/backend';
 import transformTimeseries from '../utilities/transform-timeseries';
+
+type TimeBucket = '24 hours' | '6 hours' | '2 hours' | '30 minutes' | '10 minutes';
 
 const IndexPage = () => {
     const [databaseSchema, setDatabaseSchema] = useState<
@@ -17,6 +20,7 @@ const IndexPage = () => {
     const [selectedSensors, setSelectedSensors] = useState<{ [key: string]: boolean }>(
         {}
     );
+    const [selectedTime, setSelectedTime] = useState<TimeBucket>('10 minutes');
     const [data, setData] = useState<{ [key: string]: string | number }[] | undefined>(
         undefined
     );
@@ -148,8 +152,12 @@ const IndexPage = () => {
                                 )}
                                 {data.length > 0 && (
                                     <>
+                                        <div className="w-full h-px bg-slate-300" />
                                         <SensorSelector
                                             {...{ selectedSensors, setSelectedSensors }}
+                                        />
+                                        <TimeSelector
+                                            {...{ selectedTime, setSelectedTime }}
                                         />
                                         <div className="w-full h-px bg-slate-300" />
                                         {databaseSchema[selectedDatabase][

@@ -45,7 +45,8 @@ const SensorSelector = (props: {
     setSelectedSensors(s: { [key: string]: boolean }): void;
 }) => {
     return (
-        <div className="flex-wrap w-full flex-row-left gap-x-6 gap-y-2">
+        <div className="flex-wrap w-full flex-row-left gap-x-4 gap-y-1">
+            <span className="-mr-2">Plot data from stations:</span>
             {Object.keys(props.selectedSensors)
                 .sort()
                 .map((k, i) => (
