@@ -137,7 +137,7 @@ export default function PlotPanel(props: {
 
     return (
         <div
-            className="grid w-full bg-white border rounded-lg shadow-sm border-slate-300 gap-y-2"
+            className="grid w-full overflow-hidden bg-white border rounded-lg shadow-sm border-slate-300 gap-y-2"
             style={{ gridTemplateColumns: '1fr auto' }}
         >
             <div className="w-full p-3 flex-col-left-top">
@@ -176,7 +176,7 @@ export default function PlotPanel(props: {
             <div
                 className={
                     'flex-col items-center hidden font-mono divide-slate-300 lg:flex ' +
-                    'bg-slate-100 rounded-r-lg h-full text-sm border-l border-slate-300'
+                    'bg-slate-75 rounded-r-lg h-full text-sm border-l border-slate-300'
                 }
             >
                 <TableRow className="mb-1 text-white rounded-tr-lg bg-slate-900">

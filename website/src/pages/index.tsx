@@ -111,7 +111,7 @@ const IndexPage = () => {
         );
 
     return (
-        <div className="w-full min-h-screen px-4 py-20 flex-col-center-top bg-slate-50">
+        <div className="w-full min-h-screen px-4 py-20 flex-col-center-top bg-slate-150">
             <main
                 className={
                     'hidden md:flex flex-col items-center w-full max-w-5xl gap-y-6 ' +

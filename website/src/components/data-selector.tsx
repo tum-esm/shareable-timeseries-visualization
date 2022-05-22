@@ -16,7 +16,7 @@ function _Select(props: {
             </label>
             <select
                 name="location"
-                className="block w-full py-2 pl-3 pr-10 mt-1 text-base rounded-md border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="block w-full py-2 pl-3 pr-10 mt-1 text-base rounded-md shadow-sm border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 value={selectedValue}
                 onChange={(e: any) =>
                     setSelectedValue(
@@ -39,7 +39,7 @@ function _RefreshButton(props: { onClick(): void }) {
     return (
         <button
             name="location"
-            className="p-1.5 text-base bg-white border rounded-md border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-slate-800"
+            className="p-1.5 text-base bg-white border rounded-md border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-slate-800 shadow-sm"
             onClick={props.onClick}
         >
             <div className="w-5 h-5 p-0.5">{icons.refresh}</div>

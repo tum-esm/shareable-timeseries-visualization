@@ -15,7 +15,7 @@ const TimeSelector = (props: {
                         'px-2 py-0.5 border rounded-md border-slate-300 text-sm ' +
                         (props.selectedTime === t
                             ? 'bg-white text-slate-950 shadow-sm '
-                            : 'bg-slate-150 text-slate-500')
+                            : 'bg-slate-100 text-slate-500')
                     }
                     onClick={() => props.setSelectedTime(t)}
                 >
