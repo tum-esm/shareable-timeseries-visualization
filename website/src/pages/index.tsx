@@ -9,35 +9,27 @@ import { TYPES, CONSTANTS } from '../utilities/constants';
 import transformTimeseries from '../utilities/transform-timeseries';
 
 const IndexPage = () => {
-    const [databaseSchema, setDatabaseSchema] = useState<
-        { [key: string]: { [key: string]: string[] } } | undefined
-    >(undefined);
-    const [selectedDatabase, setSelectedDatabase] = useState<string | undefined>(
-        undefined
-    );
+    const [dbSchema, setDbSchema] = useState<TYPES.DB_SCHEMA | undefined>(undefined);
+    const [allData, setAllData] = useState<TYPES.DATA | undefined>(undefined);
+    const [metaData, setMetaData] = useState<TYPES.META_DATA | undefined>(undefined);
+    const [maxTime, setMaxTime] = useState<TYPES.MAX_TIME | undefined>(undefined);
+
+    const [selectedDb, setSelectedDb] = useState<string | undefined>(undefined);
     const [selectedTable, setSelectedTable] = useState<string | undefined>(undefined);
-    const [selectedSensors, setSelectedSensors] = useState<{ [key: string]: boolean }>(
-        {}
-    );
+    const [selectedSensors, setSelectedSensors] = useState<TYPES.SELECTED_SENSORS>({});
     const [selectedTime, setSelectedTime] = useState<TYPES.TimeBucket>(
         CONSTANTS.TIMES[0]
     );
-    const [allData, setAllData] = useState<
-        { [key: string]: string | number }[] | undefined
-    >(undefined);
 
-    const [metaData, setMetaData] = useState<
-        | { [key: string]: { unit: string | null; description: string | null } }
-        | undefined
-    >(undefined);
-
-    const [maxTime, setMaxTime] = useState<{ date: number; hour: number } | undefined>(
-        undefined
-    );
+    const [serverError, setServerError] = useState(false);
 
     // TODO: How to deal with non 200 responses from backend?
     async function loadDatabaseSchema() {
-        setDatabaseSchema(await backend.getSchema());
+        try {
+            setDbSchema(await backend.getSchema());
+        } catch {
+            setServerError(true);
+        }
     }
     async function loadData() {
         setAllData(undefined);
@@ -45,17 +37,22 @@ const IndexPage = () => {
         setMetaData(undefined);
         console.log('load data');
         if (
-            databaseSchema !== undefined &&
-            selectedDatabase !== undefined &&
+            dbSchema !== undefined &&
+            selectedDb !== undefined &&
             selectedTable !== undefined
         ) {
-            const { newMaxTime, newData } = transformTimeseries.mergeTimeColumns(
-                await backend.getData(selectedDatabase, selectedTable),
-                databaseSchema[selectedDatabase][selectedTable]
-            );
-            setAllData(newData);
-            setMaxTime(newMaxTime);
-            setMetaData(await backend.getMetaData(selectedDatabase, selectedTable));
+            try {
+                const _rawData = await backend.getData(selectedDb, selectedTable);
+                const { newMaxTime, newData } = transformTimeseries.mergeTimeColumns(
+                    _rawData,
+                    dbSchema[selectedDb][selectedTable]
+                );
+                setAllData(newData);
+                setMaxTime(newMaxTime);
+                setMetaData(await backend.getMetaData(selectedDb, selectedTable));
+            } catch {
+                setServerError(true);
+            }
         }
     }
 
@@ -83,10 +80,10 @@ const IndexPage = () => {
 
     useEffect(() => {
         setSelectedTable(undefined);
-        if (selectedDatabase === undefined) {
+        if (selectedDb === undefined) {
             setSelectedTable(undefined);
         }
-    }, [selectedDatabase]);
+    }, [selectedDb]);
 
     let selectedTimeCSS = `time-bucket-${selectedTime.replace(' ', '-')}`;
     let selectedSensorCSS = '';
@@ -100,15 +97,15 @@ const IndexPage = () => {
     }
 
     const stateIsComplete =
-        databaseSchema !== undefined &&
-        selectedDatabase !== undefined &&
+        dbSchema !== undefined &&
+        selectedDb !== undefined &&
         selectedTable !== undefined &&
         selectedSensors !== undefined &&
         allData !== undefined &&
         maxTime !== undefined &&
         metaData !== undefined &&
         reduce(
-            databaseSchema[selectedDatabase][selectedTable],
+            dbSchema[selectedDb][selectedTable],
             (prev, curr, _) => prev && allData[0][curr] !== undefined,
             true
         );
@@ -117,67 +114,91 @@ const IndexPage = () => {
         <div className="w-full min-h-screen px-4 py-20 flex-col-center-top bg-slate-50">
             <main
                 className={
-                    'hidden md:flex flex-col w-full max-w-5xl gap-y-6 ' +
+                    'hidden md:flex flex-col items-center w-full max-w-5xl gap-y-6 ' +
                     selectedSensorCSS +
                     selectedTimeCSS
                 }
             >
-                {databaseSchema === undefined && (
-                    <div className="w-full text-center">loading schema ...</div>
+                {serverError && (
+                    <div className="w-full max-w-md text-center">
+                        Too many concurrent requests to the database. Please try again
+                        in a few minutes.{' '}
+                        <button
+                            onClick={() => window.open('/', '_self')}
+                            className="font-medium text-green-600 underline"
+                        >
+                            Reload now
+                        </button>
+                    </div>
                 )}
-                {databaseSchema !== undefined && (
+                {!serverError && (
                     <>
-                        <DataSelector
-                            {...{
-                                databaseSchema,
-                                selectedDatabase,
-                                setSelectedDatabase,
-                                selectedTable,
-                                setSelectedTable,
-                                triggerRefresh: loadData,
-                                maxTime,
-                            }}
-                        />
-                        {selectedDatabase !== undefined &&
-                            selectedTable !== undefined &&
-                            !stateIsComplete && (
-                                <div className="w-full text-center">
-                                    loading data ...
-                                </div>
-                            )}
-                        {stateIsComplete && (
+                        {dbSchema === undefined && (
+                            <div className="w-full text-center">loading schema ...</div>
+                        )}
+                        {dbSchema !== undefined && (
                             <>
-                                {allData.length === 0 && (
-                                    <>
-                                        <div className="w-full h-px bg-slate-300" />
-                                        <div className="w-full text-lg text-center text-slate-700">
-                                            table is empty
+                                <DataSelector
+                                    {...{
+                                        dbSchema,
+                                        selectedDb,
+                                        setSelectedDb,
+                                        selectedTable,
+                                        setSelectedTable,
+                                        triggerRefresh: loadData,
+                                        maxTime,
+                                    }}
+                                />
+                                {selectedDb !== undefined &&
+                                    selectedTable !== undefined &&
+                                    !stateIsComplete && (
+                                        <div className="w-full text-center">
+                                            loading data ...
                                         </div>
-                                    </>
-                                )}
-                                {allData.length > 0 && (
+                                    )}
+                                {stateIsComplete && (
                                     <>
-                                        <div className="w-full h-px bg-slate-300" />
-                                        <SensorSelector
-                                            {...{ selectedSensors, setSelectedSensors }}
-                                        />
-                                        <TimeSelector
-                                            {...{ selectedTime, setSelectedTime }}
-                                        />
-                                        <div className="w-full h-px bg-slate-300" />
-                                        {databaseSchema[selectedDatabase][
-                                            selectedTable
-                                        ].map((column_name, index) => (
-                                            <PlotPanel
-                                                key={index}
-                                                column_name={column_name}
-                                                data={allData}
-                                                metaData={metaData}
-                                                selectedSensors={selectedSensors}
-                                                maxTime={maxTime}
-                                                selectedTime={selectedTime}
-                                            />
-                                        ))}
+                                        {allData.length === 0 && (
+                                            <>
+                                                <div className="w-full h-px bg-slate-300" />
+                                                <div className="w-full text-lg text-center text-slate-700">
+                                                    table is empty
+                                                </div>
+                                            </>
+                                        )}
+                                        {allData.length > 0 && (
+                                            <>
+                                                <div className="w-full h-px bg-slate-300" />
+                                                <SensorSelector
+                                                    {...{
+                                                        selectedSensors,
+                                                        setSelectedSensors,
+                                                    }}
+                                                />
+                                                <TimeSelector
+                                                    {...{
+                                                        selectedTime,
+                                                        setSelectedTime,
+                                                    }}
+                                                />
+                                                <div className="w-full h-px bg-slate-300" />
+                                                {dbSchema[selectedDb][
+                                                    selectedTable
+                                                ].map((column_name, index) => (
+                                                    <PlotPanel
+                                                        key={index}
+                                                        column_name={column_name}
+                                                        data={allData}
+                                                        metaData={metaData}
+                                                        selectedSensors={
+                                                            selectedSensors
+                                                        }
+                                                        maxTime={maxTime}
+                                                        selectedTime={selectedTime}
+                                                    />
+                                                ))}
+                                            </>
+                                        )}
                                     </>
                                 )}
                             </>

@@ -5,6 +5,18 @@ export namespace TYPES {
         | '2 hours'
         | '30 minutes'
         | '10 minutes';
+
+    export type DB_SCHEMA = { [key: string]: { [key: string]: string[] } };
+
+    export type DATA = { [key: string]: string | number }[];
+
+    export type META_DATA = {
+        [key: string]: { unit: string | null; description: string | null };
+    };
+
+    export type SELECTED_SENSORS = { [key: string]: boolean };
+
+    export type MAX_TIME = { date: number; hour: number };
 }
 
 export const CONSTANTS: {

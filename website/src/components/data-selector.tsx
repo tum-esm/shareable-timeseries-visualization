@@ -11,13 +11,17 @@ function _Select(props: {
     const { options, selectedValue, setSelectedValue } = props;
     return (
         <div>
-            <label className="block text-sm font-medium text-slate-700">{props.label}</label>
+            <label className="block text-sm font-medium text-slate-700">
+                {props.label}
+            </label>
             <select
                 name="location"
                 className="block w-full py-2 pl-3 pr-10 mt-1 text-base rounded-md border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 value={selectedValue}
                 onChange={(e: any) =>
-                    setSelectedValue(e.target.value !== '-' ? e.target.value : undefined)
+                    setSelectedValue(
+                        e.target.value !== '-' ? e.target.value : undefined
+                    )
                 }
             >
                 <option value={undefined}>-</option>
@@ -44,9 +48,9 @@ function _RefreshButton(props: { onClick(): void }) {
 }
 
 const DataSelector = (props: {
-    databaseSchema: { [key: string]: { [key: string]: string[] } };
-    selectedDatabase: string | undefined;
-    setSelectedDatabase(s: string | undefined): void;
+    dbSchema: { [key: string]: { [key: string]: string[] } };
+    selectedDb: string | undefined;
+    setSelectedDb(s: string | undefined): void;
     selectedTable: string | undefined;
     setSelectedTable(s: string | undefined): void;
     triggerRefresh(): void;
@@ -54,28 +58,28 @@ const DataSelector = (props: {
 }) => {
     return (
         <div className="w-full flex-row-left-bottom gap-x-2">
-            {Object.keys(props.databaseSchema).length > 0 && (
+            {Object.keys(props.dbSchema).length > 0 && (
                 <_Select
                     label="database"
-                    options={Object.keys(props.databaseSchema)}
-                    selectedValue={props.selectedDatabase}
-                    setSelectedValue={props.setSelectedDatabase}
+                    options={Object.keys(props.dbSchema)}
+                    selectedValue={props.selectedDb}
+                    setSelectedValue={props.setSelectedDb}
                 />
             )}
-            {Object.keys(props.databaseSchema).length == 0 && <div>No databases found</div>}
-            {props.selectedDatabase !== undefined && (
+            {Object.keys(props.dbSchema).length == 0 && <div>No databases found</div>}
+            {props.selectedDb !== undefined && (
                 <>
-                    {Object.keys(props.databaseSchema[props.selectedDatabase]).length > 0 && (
+                    {Object.keys(props.dbSchema[props.selectedDb]).length > 0 && (
                         <>
                             <_Select
                                 label="table"
-                                options={Object.keys(props.databaseSchema[props.selectedDatabase])}
+                                options={Object.keys(props.dbSchema[props.selectedDb])}
                                 selectedValue={props.selectedTable}
                                 setSelectedValue={props.setSelectedTable}
                             />
                         </>
                     )}
-                    {Object.keys(props.databaseSchema[props.selectedDatabase]).length == 0 && (
+                    {Object.keys(props.dbSchema[props.selectedDb]).length == 0 && (
                         <div>No tables found</div>
                     )}
                 </>
@@ -84,7 +88,8 @@ const DataSelector = (props: {
             {props.maxTime !== undefined && (
                 <>
                     <div className="text-sm h-7 text-slate-900">
-                        <span className="opacity-60">Newest data:</span> {props.maxTime.date},{' '}
+                        <span className="opacity-60">Newest data:</span>{' '}
+                        {props.maxTime.date},{' '}
                         {transformTimeseries.renderTimeLabel(props.maxTime.hour)} (UTC)
                     </div>
                     <_RefreshButton onClick={props.triggerRefresh} />

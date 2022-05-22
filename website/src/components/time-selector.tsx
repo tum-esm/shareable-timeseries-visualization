@@ -6,7 +6,7 @@ const TimeSelector = (props: {
     setSelectedTime(s: TYPES.TimeBucket): void;
 }) => {
     return (
-        <div className="flex -mt-4 gap-x-1">
+        <div className="flex w-full -mt-4 gap-x-1">
             <span className="pr-0.5">Show the latest:</span>
             {CONSTANTS.TIMES.map((t) => (
                 <button
