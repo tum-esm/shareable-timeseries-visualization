@@ -1,21 +1,5 @@
 import React from 'react';
-
-// rose, purple, blue, teal, lime, orange
-// pink, violet, sky, emerald, yellow, red
-const COLORS = [
-    'text-rose-600 focus:ring-rose-500',
-    'text-purple-600 focus:ring-purple-500',
-    'text-blue-600 focus:ring-blue-500',
-    'text-teal-600 focus:ring-teal-500',
-    'text-lime-600 focus:ring-lime-500',
-    'text-orange-600 focus:ring-orange-500',
-    'text-pink-600 focus:ring-pink-500',
-    'text-violet-600 focus:ring-violet-500',
-    'text-sky-600 focus:ring-sky-500',
-    'text-emerald-600 focus:ring-emerald-500',
-    'text-yellow-600 focus:ring-yellow-500',
-    'text-red-600 focus:ring-red-500',
-];
+import CONSTANTS from '../utilities/constants';
 
 function _Checkbox(props: {
     label: string;
@@ -31,7 +15,12 @@ function _Checkbox(props: {
                     aria-describedby="candidates-description"
                     name="candidates"
                     type="checkbox"
-                    className={'w-4 h-4 border-slate-300 rounded ' + COLORS[props.sensorIndex]}
+                    className={
+                        'w-4 h-4 border-slate-300 rounded ' +
+                        CONSTANTS.TEXT_COLORS[props.sensorIndex] +
+                        ' ' +
+                        CONSTANTS.FOCUS_COLORS[props.sensorIndex]
+                    }
                     checked={props.value}
                     onChange={() => props.setValue(!props.value)}
                 />

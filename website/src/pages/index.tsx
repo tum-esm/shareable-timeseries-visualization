@@ -83,6 +83,19 @@ const IndexPage = () => {
         });
     }
 
+    const stateIsComplete =
+        databaseSchema !== undefined &&
+        selectedDatabase !== undefined &&
+        selectedTable !== undefined &&
+        selectedSensors !== undefined &&
+        data !== undefined &&
+        metaData !== undefined &&
+        reduce(
+            databaseSchema[selectedDatabase][selectedTable],
+            (prev, curr, _) => prev && data[0][curr] !== undefined,
+            true
+        );
+
     return (
         <div className="w-full min-h-screen px-4 py-20 flex-col-center-top bg-slate-50">
             <main
@@ -106,38 +119,39 @@ const IndexPage = () => {
                         />
                         {selectedDatabase !== undefined &&
                             selectedTable !== undefined &&
-                            selectedSensors !== undefined &&
-                            data !== undefined &&
-                            metaData !== undefined && (
-                                <>
-                                    {data.length === 0 && (
-                                        <>
-                                            <div className="w-full h-px bg-slate-300" />
-                                            <div className="w-full text-lg text-center text-slate-700">
-                                                table is empty
-                                            </div>
-                                        </>
-                                    )}
-                                    {data.length > 0 && (
-                                        <>
-                                            <SensorSelector
-                                                {...{ selectedSensors, setSelectedSensors }}
-                                            />
-                                            <div className="w-full h-px bg-slate-300" />
-                                            {databaseSchema[selectedDatabase][selectedTable].map(
-                                                (column_name, index) => (
-                                                    <PlotPanel
-                                                        key={index}
-                                                        column_name={column_name}
-                                                        data={data}
-                                                        metaData={metaData}
-                                                    />
-                                                )
-                                            )}
-                                        </>
-                                    )}
-                                </>
+                            !stateIsComplete && (
+                                <div className="w-full text-center">loading data ...</div>
                             )}
+                        {stateIsComplete && (
+                            <>
+                                {data.length === 0 && (
+                                    <>
+                                        <div className="w-full h-px bg-slate-300" />
+                                        <div className="w-full text-lg text-center text-slate-700">
+                                            table is empty
+                                        </div>
+                                    </>
+                                )}
+                                {data.length > 0 && (
+                                    <>
+                                        <SensorSelector
+                                            {...{ selectedSensors, setSelectedSensors }}
+                                        />
+                                        <div className="w-full h-px bg-slate-300" />
+                                        {databaseSchema[selectedDatabase][selectedTable].map(
+                                            (column_name, index) => (
+                                                <PlotPanel
+                                                    key={index}
+                                                    column_name={column_name}
+                                                    data={data}
+                                                    metaData={metaData}
+                                                />
+                                            )
+                                        )}
+                                    </>
+                                )}
+                            </>
+                        )}
                     </>
                 )}
             </main>
