@@ -3,15 +3,18 @@ import { min, max, uniq, reduce, mean, first } from 'lodash';
 import * as d3 from 'd3';
 import { plotCircles } from '../utilities/plot-d3-elements';
 import icons from '../assets/icons';
-import { CONSTANTS } from '../utilities/constants';
+import { CONSTANTS, TYPES } from '../utilities/constants';
 
 export default function PlotPanel(props: {
     column_name: string;
     data: { [key: string]: number | string }[];
     metaData: { [key: string]: { unit: string | null; description: string | null } };
     selectedSensors: { [key: string]: boolean };
+    maxTime: { hour: number; date: number };
+    selectedTime: TYPES.TimeBucket;
 }) {
-    const { column_name, data, metaData, selectedSensors } = props;
+    const { column_name, data, metaData, selectedSensors, maxTime, selectedTime } =
+        props;
     console.log({ props });
     const [descriptionIsVisible, setDescriptionIsVisible] = useState(false);
 
@@ -37,35 +40,57 @@ export default function PlotPanel(props: {
     const description = metaData[column_name]?.description || undefined;
     const sensorNames: string[] = uniq(data.map((d): any => d['sensor'])).sort();
 
-    const statisticalValues = useMemo(
+    function sensorStats(
+        _data: { [key: string]: number | string }[],
+        _sensorName: string
+    ) {
+        const _sensorData = _data
+            .filter((d: any) => d['sensor'] === _sensorName)
+            .map((d): any => d[column_name]);
+        return {
+            [_sensorName]: {
+                current: first(_sensorData),
+                min: min(_sensorData),
+                mean: mean(_sensorData),
+                max: max(_sensorData),
+            },
+        };
+    }
+
+    function timeStats(
+        _data: { [key: string]: number | string }[],
+        _time: TYPES.TimeBucket
+    ) {
+        const _timeData = _data.filter(
+            (d) => d['hour'] >= maxTime.hour - CONSTANTS.HOUR_FRACTIONS[_time]
+        );
+        return {
+            [_time]: reduce(
+                sensorNames,
+                (prev2, sensorName, _) => ({
+                    ...prev2,
+                    ...sensorStats(_timeData, sensorName),
+                }),
+                {}
+            ),
+        };
+    }
+
+    // @ts-ignore
+    const statisticalValues: {
+        [key in TYPES.TimeBucket]: {
+            [key: string]: {
+                current: number;
+                min: number;
+                mean: number;
+                max: number;
+            };
+        };
+    } = useMemo(
         () =>
             reduce(
-                sensorNames,
-                (
-                    prev: {
-                        [key: string]: {
-                            current: number;
-                            min: number;
-                            mean: number;
-                            max: number;
-                        };
-                    },
-                    sensorName,
-                    _
-                ) => {
-                    const _sensorData = data
-                        .filter((d) => d['sensor'] === sensorName)
-                        .map((d): any => d[column_name]);
-                    return {
-                        ...prev,
-                        [sensorName]: {
-                            current: first(_sensorData),
-                            min: min(_sensorData),
-                            mean: mean(_sensorData),
-                            max: max(_sensorData),
-                        },
-                    };
-                },
+                CONSTANTS.TIMES,
+                (prev1, time, _) => ({ ...prev1, ...timeStats(data, time) }),
                 {}
             ),
         [data]
@@ -146,7 +171,7 @@ export default function PlotPanel(props: {
                                     }
                                 >
                                     {/* @ts-ignore */}
-                                    {statisticalValues[s][t].toFixed(3)}
+                                    {statisticalValues[selectedTime][s][t].toFixed(3)}
                                 </div>
                             ))}
                         </div>

@@ -25,9 +25,6 @@ const IndexPage = () => {
     const [allData, setAllData] = useState<
         { [key: string]: string | number }[] | undefined
     >(undefined);
-    const [timeFramedData, setTimeFramedData] = useState<
-        { [key: string]: string | number }[] | undefined
-    >(undefined);
 
     const [metaData, setMetaData] = useState<
         | { [key: string]: { unit: string | null; description: string | null } }
@@ -44,7 +41,6 @@ const IndexPage = () => {
     }
     async function loadData() {
         setAllData(undefined);
-        setTimeFramedData(undefined);
         setMaxTime(undefined);
         setMetaData(undefined);
         console.log('load data');
@@ -62,23 +58,6 @@ const IndexPage = () => {
             setMetaData(await backend.getMetaData(selectedDatabase, selectedTable));
         }
     }
-
-    useEffect(() => {
-        if (allData !== undefined && maxTime !== undefined) {
-            const hourFraction = {
-                '10 minutes': 0.1666666,
-                '30 minutes': 0.5,
-                '2 hours': 2,
-                '6 hours': 6,
-                '24 hours': 24,
-            };
-            setTimeFramedData(
-                allData.filter(
-                    (d) => d['hour'] >= maxTime.hour - hourFraction[selectedTime]
-                )
-            );
-        }
-    }, [allData, selectedTime, maxTime]);
 
     useEffect(() => {
         if (allData === undefined) {
@@ -126,6 +105,7 @@ const IndexPage = () => {
         selectedTable !== undefined &&
         selectedSensors !== undefined &&
         allData !== undefined &&
+        maxTime !== undefined &&
         metaData !== undefined &&
         reduce(
             databaseSchema[selectedDatabase][selectedTable],
@@ -194,6 +174,8 @@ const IndexPage = () => {
                                                 data={allData}
                                                 metaData={metaData}
                                                 selectedSensors={selectedSensors}
+                                                maxTime={maxTime}
+                                                selectedTime={selectedTime}
                                             />
                                         ))}
                                     </>
