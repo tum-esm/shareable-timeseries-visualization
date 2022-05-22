@@ -11,7 +11,7 @@ function _Checkbox(props: {
         <div className="relative flex items-start">
             <div className="flex items-center h-5">
                 <input
-                    id="candidates"
+                    id={`sensor-checkbox-${props.sensorIndex}`}
                     aria-describedby="candidates-description"
                     name="candidates"
                     type="checkbox"
@@ -26,7 +26,13 @@ function _Checkbox(props: {
                 />
             </div>
             <div className="ml-1.5 text-sm">
-                <label htmlFor="candidates" className="font-medium text-slate-700">
+                <label
+                    htmlFor={`sensor-checkbox-${props.sensorIndex}`}
+                    className={
+                        'font-medium text-slate-700 ' +
+                        CONSTANTS.TEXT_COLORS[props.sensorIndex]
+                    }
+                >
                     {props.label}
                 </label>
             </div>
@@ -48,7 +54,10 @@ const SensorSelector = (props: {
                         label={k}
                         value={props.selectedSensors[k]}
                         setValue={(v) =>
-                            props.setSelectedSensors({ ...props.selectedSensors, [k]: v })
+                            props.setSelectedSensors({
+                                ...props.selectedSensors,
+                                [k]: v,
+                            })
                         }
                         sensorIndex={i}
                     />

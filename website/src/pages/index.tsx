@@ -10,15 +10,24 @@ const IndexPage = () => {
     const [databaseSchema, setDatabaseSchema] = useState<
         { [key: string]: { [key: string]: string[] } } | undefined
     >(undefined);
-    const [selectedDatabase, setSelectedDatabase] = useState<string | undefined>(undefined);
+    const [selectedDatabase, setSelectedDatabase] = useState<string | undefined>(
+        undefined
+    );
     const [selectedTable, setSelectedTable] = useState<string | undefined>(undefined);
-    const [selectedSensors, setSelectedSensors] = useState<{ [key: string]: boolean }>({});
-    const [data, setData] = useState<{ [key: string]: string | number }[] | undefined>(undefined);
+    const [selectedSensors, setSelectedSensors] = useState<{ [key: string]: boolean }>(
+        {}
+    );
+    const [data, setData] = useState<{ [key: string]: string | number }[] | undefined>(
+        undefined
+    );
     const [metaData, setMetaData] = useState<
-        { [key: string]: { unit: string | null; description: string | null } } | undefined
+        | { [key: string]: { unit: string | null; description: string | null } }
+        | undefined
     >(undefined);
 
-    const [maxTime, setMaxTime] = useState<{ date: number; hour: number } | undefined>(undefined);
+    const [maxTime, setMaxTime] = useState<{ date: number; hour: number } | undefined>(
+        undefined
+    );
 
     // TODO: How to deal with non 200 responses from backend?
     async function loadDatabaseSchema() {
@@ -99,7 +108,10 @@ const IndexPage = () => {
     return (
         <div className="w-full min-h-screen px-4 py-20 flex-col-center-top bg-slate-50">
             <main
-                className={'hidden md:flex flex-col w-full max-w-5xl gap-y-6 ' + selectedSensorCSS}
+                className={
+                    'hidden md:flex flex-col w-full max-w-5xl gap-y-6 ' +
+                    selectedSensorCSS
+                }
             >
                 {databaseSchema === undefined && (
                     <div className="w-full text-center">loading schema ...</div>
@@ -120,7 +132,9 @@ const IndexPage = () => {
                         {selectedDatabase !== undefined &&
                             selectedTable !== undefined &&
                             !stateIsComplete && (
-                                <div className="w-full text-center">loading data ...</div>
+                                <div className="w-full text-center">
+                                    loading data ...
+                                </div>
                             )}
                         {stateIsComplete && (
                             <>
@@ -138,16 +152,17 @@ const IndexPage = () => {
                                             {...{ selectedSensors, setSelectedSensors }}
                                         />
                                         <div className="w-full h-px bg-slate-300" />
-                                        {databaseSchema[selectedDatabase][selectedTable].map(
-                                            (column_name, index) => (
-                                                <PlotPanel
-                                                    key={index}
-                                                    column_name={column_name}
-                                                    data={data}
-                                                    metaData={metaData}
-                                                />
-                                            )
-                                        )}
+                                        {databaseSchema[selectedDatabase][
+                                            selectedTable
+                                        ].map((column_name, index) => (
+                                            <PlotPanel
+                                                key={index}
+                                                column_name={column_name}
+                                                data={data}
+                                                metaData={metaData}
+                                                selectedSensors={selectedSensors}
+                                            />
+                                        ))}
                                     </>
                                 )}
                             </>
