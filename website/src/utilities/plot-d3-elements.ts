@@ -1,7 +1,7 @@
 import { uniq, min, max, range } from 'lodash';
 import * as d3 from 'd3';
 import transformTimeseries from './transform-timeseries';
-import CONSTANTS from './constants';
+import { CONSTANTS } from './constants';
 
 export const plotCircles = (
     svg: any,
@@ -16,7 +16,10 @@ export const plotCircles = (
     const minX: any = maxX - 2;
     const deltaX = maxX - minX;
 
-    const xScale: (x: number) => number = d3.scaleLinear().domain([minX, maxX]).range([40, 380]);
+    const xScale: (x: number) => number = d3
+        .scaleLinear()
+        .domain([minX, maxX])
+        .range([40, 380]);
     const yScale: (x: number) => number = d3
         .scaleLinear()
         .domain([maxY + 0.1 * deltaY, minY - 0.1 * deltaY])
@@ -57,10 +60,18 @@ export const plotCircles = (
             .text(text);
     }
     range(40, 381, 17).forEach((x, index) => {
-        _plotLine(x, x, CONSTANTS.PLOT_Y_MIN, CONSTANTS.PLOT_Y_MAX, [40, 380].includes(x));
+        _plotLine(
+            x,
+            x,
+            CONSTANTS.PLOT_Y_MIN,
+            CONSTANTS.PLOT_Y_MAX,
+            [40, 380].includes(x)
+        );
         if (index % 5 === 0) {
             _plotLine(x, x, CONSTANTS.PLOT_Y_MAX, CONSTANTS.PLOT_Y_MAX + 10, true);
-            const _xLabel = transformTimeseries.renderTimeLabel(minX + (index / 20.0) * deltaX);
+            const _xLabel = transformTimeseries.renderTimeLabel(
+                minX + (index / 20.0) * deltaX
+            );
             _plotLabel(x, CONSTANTS.PLOT_Y_MAX + 17, _xLabel, 'middle');
         }
     });
@@ -69,7 +80,13 @@ export const plotCircles = (
         CONSTANTS.PLOT_Y_MAX + 1,
         (CONSTANTS.PLOT_Y_MAX - CONSTANTS.PLOT_Y_MIN) / 10.0
     ).forEach((y, index) => {
-        _plotLine(40, 380, y, y, [CONSTANTS.PLOT_Y_MIN, CONSTANTS.PLOT_Y_MAX].includes(y));
+        _plotLine(
+            40,
+            380,
+            y,
+            y,
+            [CONSTANTS.PLOT_Y_MIN, CONSTANTS.PLOT_Y_MAX].includes(y)
+        );
         if (index % 2 === 0) {
             _plotLine(36.5, 40, y, y, true);
             const _yLabel = maxY + 0.1 * deltaY - (index / 10.0) * 1.2 * deltaY;
@@ -109,8 +126,12 @@ export const plotCircles = (
 
             // Keep all circles in sync with the data
             .merge(circles)
-            .attr('cx', (d: { x: number; y: number }, i: number) => xScale(d.x).toFixed(2))
-            .attr('cy', (d: { x: number; y: number }, i: number) => yScale(d.y).toFixed(2));
+            .attr('cx', (d: { x: number; y: number }, i: number) =>
+                xScale(d.x).toFixed(2)
+            )
+            .attr('cy', (d: { x: number; y: number }, i: number) =>
+                yScale(d.y).toFixed(2)
+            );
 
         // Remove old circle elements
         circles.exit().remove();

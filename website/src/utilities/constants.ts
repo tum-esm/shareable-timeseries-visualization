@@ -1,11 +1,22 @@
-// API
-// cloud run container of the startlette server in /backend
+export namespace TYPES {
+    export type TimeBucket =
+        | '24 hours'
+        | '6 hours'
+        | '2 hours'
+        | '30 minutes'
+        | '10 minutes';
+}
 
-// COLORS
-// rose, purple, blue, teal, lime, orange
-// pink, violet, sky, emerald, yellow, red
-
-const CONSTANTS = {
+export const CONSTANTS: {
+    API: string;
+    HEX_COLORS: string[];
+    TEXT_COLORS: string[];
+    FOCUS_COLORS: string[];
+    SVG_HEIGHT: number;
+    PLOT_Y_MIN: number;
+    PLOT_Y_MAX: number;
+    TIMES: TYPES.TimeBucket[];
+} = {
     API: 'https://stv-backend-iwtvwmhnyq-ew.a.run.app',
     HEX_COLORS: [
         '#f43f5e',
@@ -52,6 +63,5 @@ const CONSTANTS = {
     SVG_HEIGHT: 150,
     PLOT_Y_MIN: 5,
     PLOT_Y_MAX: 130,
+    TIMES: ['10 minutes', '30 minutes', '2 hours', '6 hours', '24 hours'],
 };
-
-export default CONSTANTS;

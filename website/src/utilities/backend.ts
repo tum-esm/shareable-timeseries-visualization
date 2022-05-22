@@ -1,4 +1,4 @@
-import CONSTANTS from './constants';
+import { CONSTANTS } from './constants';
 
 const backend = {
     getSchema: async (): Promise<any> => {
@@ -10,7 +10,9 @@ const backend = {
         }
     },
     getData: async (database: string, table: string): Promise<any> => {
-        const response = await fetch(CONSTANTS.API + `/data?database=${database}&table=${table}`);
+        const response = await fetch(
+            CONSTANTS.API + `/data?database=${database}&table=${table}`
+        );
         if (response.ok) {
             return response.json();
         } else {

@@ -1,5 +1,5 @@
 import React from 'react';
-import CONSTANTS from '../utilities/constants';
+import { CONSTANTS } from '../utilities/constants';
 
 function _Checkbox(props: {
     label: string;

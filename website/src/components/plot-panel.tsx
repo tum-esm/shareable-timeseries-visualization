@@ -3,7 +3,7 @@ import { min, max, uniq, reduce, mean, first } from 'lodash';
 import * as d3 from 'd3';
 import { plotCircles } from '../utilities/plot-d3-elements';
 import icons from '../assets/icons';
-import CONSTANTS from '../utilities/constants';
+import { CONSTANTS } from '../utilities/constants';
 
 export default function PlotPanel(props: {
     column_name: string;

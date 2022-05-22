@@ -5,9 +5,8 @@ import PlotPanel from '../components/plot-panel';
 import SensorSelector from '../components/sensor-selector';
 import TimeSelector from '../components/time-selector';
 import backend from '../utilities/backend';
+import { TYPES, CONSTANTS } from '../utilities/constants';
 import transformTimeseries from '../utilities/transform-timeseries';
-
-type TimeBucket = '24 hours' | '6 hours' | '2 hours' | '30 minutes' | '10 minutes';
 
 const IndexPage = () => {
     const [databaseSchema, setDatabaseSchema] = useState<
@@ -20,7 +19,9 @@ const IndexPage = () => {
     const [selectedSensors, setSelectedSensors] = useState<{ [key: string]: boolean }>(
         {}
     );
-    const [selectedTime, setSelectedTime] = useState<TimeBucket>('10 minutes');
+    const [selectedTime, setSelectedTime] = useState<TYPES.TimeBucket>(
+        CONSTANTS.TIMES[0]
+    );
     const [allData, setAllData] = useState<
         { [key: string]: string | number }[] | undefined
     >(undefined);
