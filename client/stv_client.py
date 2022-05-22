@@ -74,18 +74,21 @@ class STVClient:
         for column_name in self.data_columns:
             if column_name not in self.units.keys():
                 self.units[column_name] = None
+            else:
+                assert (
+                    len(self.units[column_name]) <= 64
+                ), f"Unit for {column_name} is longer than 64 characters"
             if column_name not in self.descriptions.keys():
                 self.descriptions[column_name] = None
+            else:
+                assert (
+                    len(self.descriptions[column_name]) <= 256
+                ), f"Description for {column_name} is longer than 256 characters"
 
-        try:
-            assert len(self.units.keys()) == len(
-                self.data_columns
-            ), "unknown key(s) in units"
-            assert len(self.descriptions.keys()) == len(
-                self.data_columns
-            ), "unknown key(s) in descriptions"
-        except AssertionError as e:
-            raise Exception(f"Invalid meta data: {e}")
+        for key in self.units.keys():
+            assert key in self.data_columns, f'Unknown key in units "{key}"'
+        for key in self.descriptions.keys():
+            assert key in self.data_columns, f'Unknown key in descriptions "{key}"'
 
     def __validate_data_format(self, data: dict[str, float]):
         """

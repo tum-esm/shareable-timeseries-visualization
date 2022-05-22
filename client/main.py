@@ -3,18 +3,20 @@ import time
 from stv_client import STVClient
 
 
-def rnd(min: int, max: int):
+def rnd(min: float, max: float):
     assert min < max
     return (random.random() * (max - min)) + min
 
 
 def example_procedure():
+    # Modifying units and description does not require old data
+    # to be removed. Only changing data_columns does.
     client = STVClient(
         database_name="airquality_course",
-        table_name="test_data",
-        data_columns=["y1", "y2"],
-        units={"y2": "ppb"},
-        descriptions={"y1": "any description you want"},
+        table_name="test_data_new",
+        data_columns=["ch4", "co2"],
+        units={"ch4": "ppb", "co2": "ppm"},
+        descriptions={"ch4": "The cows are at fault, for sure"},
         print_stuff=True,
     )
 
@@ -22,9 +24,9 @@ def example_procedure():
 
     while True:
         try:
-            for sensor_name in ["sensor-1", "sensor-2", "sensor-3"]:
+            for sensor_name in ["sensor-1", "sensor-2", "sensor-3", "sensor-4"]:
                 client.insert_data(
-                    sensor_name, {"y1_ppm": rnd(90, 110), "y2_ppb": rnd(1.7, 1.95)}
+                    sensor_name, {"ch4": rnd(1.8, 1.95), "co2": rnd(414.0, 423.0)}
                 )
             time.sleep(3)
         except KeyboardInterrupt:
