@@ -10,6 +10,7 @@ const TimeSelector = (props: {
             <span className="pr-0.5">Show the latest:</span>
             {CONSTANTS.TIMES.map((t) => (
                 <button
+                    key={t}
                     className={
                         'px-2 py-0.5 border rounded-md border-slate-300 text-sm ' +
                         (props.selectedTime === t

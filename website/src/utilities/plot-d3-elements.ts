@@ -29,13 +29,18 @@ export const plotCircles = (
             .domain([_maxY + 0.1 * _deltaY, _minY - 0.1 * _deltaY])
             .range([CONSTANTS.PLOT_Y_MIN, CONSTANTS.PLOT_Y_MAX]);
 
-        const classes = {
+        const timedClasses = {
             lineGroup: `line-group-${time.replace(' ', '-')}`,
             labelGroup: `label-group-${time.replace(' ', '-')}`,
             circleGroup: `circle-group-${time.replace(' ', '-')}`,
         };
-        let _lineGroup: any = svg.selectAll(`.${classes.lineGroup}`);
-        let _labelGroup: any = svg.selectAll(`.${classes.labelGroup}`);
+        const indexedClasses = {
+            lineGroup: (index: number) => `line-group-${index}`,
+            labelGroup: (index: number) => `label-group-${index}`,
+            circleGroup: (index: number) => `circle-group-${index}`,
+        };
+        let _lineGroup: any = svg.selectAll(`.${timedClasses.lineGroup}`);
+        let _labelGroup: any = svg.selectAll(`.${timedClasses.labelGroup}`);
         if (!_lineGroup.empty()) {
             _lineGroup.remove();
         }
@@ -44,10 +49,10 @@ export const plotCircles = (
         }
         _lineGroup = svg
             .append('g')
-            .attr('class', `${classes.lineGroup} fill-slate-600 z-0`);
+            .attr('class', `${timedClasses.lineGroup} fill-slate-600 z-0`);
         _labelGroup = svg
             .append('g')
-            .attr('class', `${classes.labelGroup} text-slate-800 z-0`);
+            .attr('class', `${timedClasses.labelGroup} text-slate-800 z-0`);
         function _plotLine(
             x1: number,
             x2: number,
@@ -116,7 +121,7 @@ export const plotCircles = (
         });
 
         let _circleGroups: any = svg
-            .selectAll(`.${classes.circleGroup}`)
+            .selectAll(`.${timedClasses.circleGroup}`)
             .data(range(0, min([sensorNames.length, 12])));
         _circleGroups
             .enter()
@@ -127,7 +132,7 @@ export const plotCircles = (
             .attr(
                 'class',
                 (index: number) =>
-                    `${classes.circleGroup} ${classes.circleGroup}-${index}`
+                    `${timedClasses.circleGroup} ${indexedClasses.circleGroup(index)}`
             )
             .attr('fill', (index: number) => CONSTANTS.HEX_COLORS[index]);
 
@@ -142,7 +147,9 @@ export const plotCircles = (
                 .filter((d) => d['sensor'] === sensorName && d['hour'] >= _minX)
                 .map((d) => ({ x: d['hour'], y: d[column_name] }));
 
-            let _circleGroup: any = svg.selectAll(`.${classes.circleGroup}-${index}`);
+            let _circleGroup: any = svg
+                .selectAll(`.${timedClasses.circleGroup}`)
+                .filter(`.${indexedClasses.circleGroup(index)}`);
             let _circles: any = _circleGroup.selectAll(`circle`).data(_sensorData);
             _circles
                 .enter()

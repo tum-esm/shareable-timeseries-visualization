@@ -47,14 +47,19 @@ export default function PlotPanel(props: {
         const _sensorData = _data
             .filter((d: any) => d['sensor'] === _sensorName)
             .map((d): any => d[column_name]);
-        return {
-            [_sensorName]: {
-                current: first(_sensorData),
-                min: min(_sensorData),
-                mean: mean(_sensorData),
-                max: max(_sensorData),
-            },
-        };
+
+        if (_sensorData.length == 0) {
+            return { [_sensorName]: { current: '-', min: '-', mean: '-', max: '-' } };
+        } else {
+            return {
+                [_sensorName]: {
+                    last: first(_sensorData).toFixed(3),
+                    min: min(_sensorData).toFixed(3),
+                    mean: mean(_sensorData).toFixed(3),
+                    max: max(_sensorData).toFixed(3),
+                },
+            };
+        }
     }
 
     function timeStats(
@@ -80,10 +85,10 @@ export default function PlotPanel(props: {
     const statisticalValues: {
         [key in TYPES.TimeBucket]: {
             [key: string]: {
-                current: number;
-                min: number;
-                mean: number;
-                max: number;
+                last: string;
+                min: string;
+                mean: string;
+                max: string;
             };
         };
     } = useMemo(
@@ -132,8 +137,9 @@ export default function PlotPanel(props: {
                 />
                 <div className="flex-col items-center hidden pb-4 ml-4 font-mono text-sm divide-y divide-slate-300 lg:flex">
                     <div className="w-full py-0.5 flex-row-right gap-x-1">
-                        {['current', 'min', 'mean', 'max'].map((t, j) => (
+                        {['last', 'min', 'mean', 'max'].map((t, j) => (
                             <div
+                                key={t}
                                 className={
                                     'w-20 px-1 py-1  text-right ' +
                                     (j == 0 ? 'font-semibold' : 'text-light')
@@ -144,7 +150,10 @@ export default function PlotPanel(props: {
                         ))}
                     </div>
                     {sensorNames.map((s, i) => (
-                        <div className={'py-1 text-right flex-row-right gap-x-1 '}>
+                        <div
+                            key={s}
+                            className={'py-1 text-right flex-row-right gap-x-1 '}
+                        >
                             <div
                                 className={
                                     'px-1 py-1 font-semibold text-center whitespace-nowrap ' +
@@ -157,8 +166,9 @@ export default function PlotPanel(props: {
                             >
                                 {s}
                             </div>
-                            {['current', 'min', 'mean', 'max'].map((t, j) => (
+                            {['last', 'min', 'mean', 'max'].map((t, j) => (
                                 <div
+                                    key={t}
                                     className={
                                         'w-20 px-1 py-1 text-right font-mono ' +
                                         (selectedSensors[s]
@@ -171,7 +181,7 @@ export default function PlotPanel(props: {
                                     }
                                 >
                                     {/* @ts-ignore */}
-                                    {statisticalValues[selectedTime][s][t].toFixed(3)}
+                                    {statisticalValues[selectedTime][s][t]}
                                 </div>
                             ))}
                         </div>
