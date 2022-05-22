@@ -1,4 +1,5 @@
 import mysql.connector
+import mysql.connector.pooling
 from datetime import datetime, timedelta
 
 from starlette.applications import Starlette
@@ -7,7 +8,10 @@ from starlette.routing import Route
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 
-connection: mysql.connector.MySQLConnection = mysql.connector.connect(
+connection_pool = mysql.connector.pooling.MySQLConnectionPool(
+    pool_name="public_pool",
+    pool_size=20,
+    pool_reset_session=True,
     host="esm-mysql-public-do-user-7320955-0.b.db.ondigitalocean.com",
     port=25060,
     user="public",
@@ -38,9 +42,11 @@ def enforce_date_on_datapoint(date: int, datapoint: tuple):
 
 def get_schema(request):
     try:
+        connection = connection_pool.get_connection()
         cursor = connection.cursor()
-    except mysql.connector.errors.OperationalError:
+    except (mysql.connector.errors.OperationalError, mysql.connector.errors.PoolError):
         return JSONResponse({"message": "too many requests"}, status_code=500)
+
     cursor.execute(
         "SELECT table_schema, table_name, column_name, data_type "
         + "FROM information_schema.columns WHERE "
@@ -91,6 +97,7 @@ def get_schema(request):
                 pass
 
     cursor.close()
+    connection.close()
     return JSONResponse(clean_schema)
 
 
@@ -106,8 +113,9 @@ def get_data(request):
         )
 
     try:
+        connection = connection_pool.get_connection()
         cursor = connection.cursor()
-    except mysql.connector.errors.OperationalError:
+    except (mysql.connector.errors.OperationalError, mysql.connector.errors.PoolError):
         return JSONResponse({"message": "too many requests"}, status_code=500)
 
     try:
@@ -119,10 +127,12 @@ def get_data(request):
         result_rows = cursor.fetchall()
     except mysql.connector.errors.ProgrammingError:
         cursor.close()
+        connection.close()
         return JSONResponse({"message": "invalid database/table"}, status_code=400)
 
     if len(result_rows) == 0:
         cursor.close()
+        connection.close()
         return JSONResponse([])
 
     # Starting with the newest measurement, return the newest 24 hours of data
@@ -139,6 +149,7 @@ def get_data(request):
     )
     results = cursor.fetchall()
     cursor.close()
+    connection.close()
     return JSONResponse(
         list(map(lambda d: enforce_date_on_datapoint(newest_date, d), results))
     )
@@ -159,8 +170,9 @@ def get_meta_data(request):
     assert string_is_clean(table_name)
 
     try:
+        connection = connection_pool.get_connection()
         cursor = connection.cursor()
-    except mysql.connector.errors.OperationalError:
+    except (mysql.connector.errors.OperationalError, mysql.connector.errors.PoolError):
         return JSONResponse({"message": "too many requests"}, status_code=500)
 
     try:
@@ -172,8 +184,10 @@ def get_meta_data(request):
         )
         result_rows = cursor.fetchall()
         cursor.close()
+        connection.close()
     except mysql.connector.errors.ProgrammingError:
         cursor.close()
+        connection.close()
         return JSONResponse({"message": "invalid database/table"}, status_code=400)
 
     meta_data = {}
