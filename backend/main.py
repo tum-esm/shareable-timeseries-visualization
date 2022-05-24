@@ -185,7 +185,7 @@ def get_meta_data(request):
 
     try:
         cursor.execute(
-            "SELECT column_name, unit, description "
+            "SELECT column_name, unit, description, minimum, detection_limit, decimal_places "
             + f"FROM {database_name}.column_meta_data WHERE "
             + f"table_name='{table_name}'",
             (),
@@ -199,12 +199,16 @@ def get_meta_data(request):
         return JSONResponse({"message": "invalid database/table"}, status_code=400)
 
     meta_data = {}
-    for column_name, unit, description in result_rows:
-        if unit == "null":
-            unit = None
-        if description == "null":
-            description = None
-        meta_data[column_name] = {"unit": unit, "description": description}
+    for row in result_rows:
+        row = list(row)
+        row[1:] = [None if x == "null" else x for x in row[1:]]
+        meta_data[row[0]] = {
+            "unit": row[1],
+            "description": row[2],
+            "minimum": row[3],
+            "detection_limit": row[4],
+            "decimal_places": row[5],
+        }
     return JSONResponse(meta_data)
 
 

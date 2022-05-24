@@ -28,7 +28,9 @@ Serving three routes: **`/schema`**, **`/data`** and **`/meta-data`**
 ```json
 [
     [880, 20220524, 14.2357, "node_1", 15.04, 0.41975, 35.28, 26.7313, 43.15],
-    [879, 20220524, 14.2315, "node_1", 15.04, 0.41216, 35.28, 26.694, 43.2433]
+    [879, 20220524, 14.2315, "node_1", 15.04, 0.41216, 35.28, 26.694, 43.2433],
+    [878, 20220524, 14.2276, "node_1", 15.04, 0.41055, 37.24, 26.6467, 43.24],
+    [877, 20220524, 14.2232, "node_1", 15.04, 0.41055, 37.24, 26.6233, 43.19]
 ]
 ```
 
@@ -36,25 +38,40 @@ Serving three routes: **`/schema`**, **`/data`** and **`/meta-data`**
 
 ```json
 {
-    "co": {
-        "unit": "mg/m³",
-        "description": "Kohlenmonoxid"
-    },
-    "luftfeuchtigkeit": {
-        "unit": "%rH",
-        "description": null
-    },
     "no2": {
         "unit": "µg/m³",
-        "description": "Stickstoffdioxid"
+        "description": "Stickstoffdioxid",
+        "minimum": 0.0,
+        "detection_limit": 20.0,
+        "decimal_places": null
+    },
+    "co": {
+        "unit": "mg/m³",
+        "description": "Kohlenmonoxid",
+        "minimum": 0.0,
+        "detection_limit": 1.0,
+        "decimal_places": null
     },
     "o3": {
         "unit": "µg/m³",
-        "description": "Ozon"
+        "description": "Ozon",
+        "minimum": 0.0,
+        "detection_limit": 35.0,
+        "decimal_places": null
     },
     "temperatur": {
         "unit": "°C",
-        "description": null
+        "description": null,
+        "minimum": null,
+        "detection_limit": null,
+        "decimal_places": 1
+    },
+    "luftfeuchtigkeit": {
+        "unit": "%rH",
+        "description": null,
+        "minimum": 0.0,
+        "detection_limit": null,
+        "decimal_places": 1
     }
 }
 ```
@@ -73,8 +90,9 @@ CREATE TABLE airquality_course.column_meta_data (
     column_name varchar(64) not null,
     unit varchar(64) null,
     description varchar(256) null,
-    min float null,
+    minimum float null,
     detection_limit float null,
+    decimal_places int null,
     primary key (table_name, column_name)
 );
 ```
