@@ -6,7 +6,10 @@ import { CONSTANTS } from './constants';
 export const plotCircles = (
     svg: any,
     column_name: string,
-    data: { [key: string]: number | string }[]
+    data: { [key: string]: number | string }[],
+    options: {
+        decimal_places: number;
+    }
 ) => {
     const sensorNames = uniq(data.map((d) => d['sensor'])).sort();
 
@@ -116,7 +119,7 @@ export const plotCircles = (
             if (index % 2 === 0) {
                 _plotLine(36.5, 40, y, y, true);
                 const _yLabel = _maxY + 0.1 * _deltaY - (index / 10.0) * 1.2 * _deltaY;
-                _plotLabel(33, y, _yLabel.toFixed(3), 'end');
+                _plotLabel(33, y, _yLabel.toFixed(options.decimal_places), 'end');
             }
         });
 
@@ -159,10 +162,10 @@ export const plotCircles = (
                 // Keep all circles in sync with the data
                 .merge(_circles)
                 .attr('cx', (d: { x: number; y: number }, i: number) =>
-                    _xScale(d.x).toFixed(2)
+                    _xScale(d.x).toFixed(3)
                 )
                 .attr('cy', (d: { x: number; y: number }, i: number) =>
-                    _yScale(d.y).toFixed(2)
+                    _yScale(d.y).toFixed(3)
                 );
 
             // Remove old circle elements
