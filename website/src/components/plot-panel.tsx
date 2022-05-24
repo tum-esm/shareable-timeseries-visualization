@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { min, max, uniq, reduce, mean, first, defaultTo } from 'lodash';
+import { min, max, uniq, reduce, mean, first, defaultTo, take } from 'lodash';
 import * as d3 from 'd3';
 import plotAllElements from '../utilities/d3-elements/plot-all-elements';
 import icons from '../assets/icons';
@@ -209,7 +209,7 @@ export default function PlotPanel(props: {
                         </TableCell>
                     ))}
                 </TableRow>
-                {sensorNames.map((s, i) => (
+                {take(sensorNames, 12).map((s, i) => (
                     <TableRow className="border-b border-slate-300 last:border-0">
                         <TableCell
                             leader

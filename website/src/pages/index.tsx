@@ -60,13 +60,18 @@ const IndexPage = () => {
         if (allData === undefined) {
             setSelectedSensors({});
         } else {
+            const uniqueSensorNames = uniq(allData.map((d) => d['sensor']));
+
             setSelectedSensors(
                 reduce(
-                    uniq(allData.map((d) => d['sensor'])),
+                    uniqueSensorNames,
                     (prev, curr, index) => ({ ...prev, [curr]: true }),
                     {}
                 )
             );
+            if (uniqueSensorNames.length > 12) {
+                alert('Too many sensor, only plotting the first 12.');
+            }
         }
     }, [allData]);
 
