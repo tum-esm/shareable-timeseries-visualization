@@ -191,15 +191,14 @@ class STVClient:
     def __drop_table(self):
         if input("schema has changed! drop the existing table? (y) ").startswith("y"):
             cursor = self.connection.cursor()
+            cursor.execute(f"DROP TABLE {self.table_name}", ())
             cursor.execute(
-                f"DROP TABLE {self.table_name}; "
-                + f"DELETE FROM column_meta_data WHERE table_name={self.table_name}",
-                (),
+                f"DELETE FROM column_meta_data WHERE table_name='{self.table_name}'", ()
             )
             self.connection.commit()
             print(f"table {self.table_name} dropped")
         else:
-            raise Exception("schema has changed, table has to be dropped")
+            raise Exception("table has to be dropped on schema change")
 
     def __create_table(self):
         """
@@ -221,11 +220,12 @@ class STVClient:
             sql_statement = (
                 f"INSERT INTO column_meta_data "
                 + f"(table_name, column_name, unit, description, minimum, detection_limit, decimal_places) "
-                + " VALUES (%s, %s, %s, %s, %s, %s)"
+                + " VALUES (%s, %s, %s, %s, %s, %s, %s)"
             )
             print("sql_statement:", sql_statement)
             cursor.execute(
-                sql_statement, (self.table_name, column_name, None, None, None, None)
+                sql_statement,
+                (self.table_name, column_name, None, None, None, None, None),
             )
 
         self.connection.commit()
@@ -259,11 +259,8 @@ class STVClient:
             assert columns[1][:3] == ("date", b"int", "NO")
             assert columns[2][:3] == ("hour", b"float", "NO")
             assert columns[3][:3] == ("sensor", b"varchar(64)", "NO")
-            _i = 4
-            for c in self.data_columns:
-                assert columns[_i][0] == c
-                assert columns[_i][1] == b"float"
-                _i += 1
+            for index, column_name in enumerate(self.data_columns):
+                assert columns[4 + index][:3] == (column_name, b"float", "")
             return True
         except AssertionError:
             return False
