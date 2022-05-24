@@ -1,3 +1,4 @@
+import json
 import mysql.connector
 import mysql.connector.pooling
 from datetime import datetime, timedelta
@@ -48,9 +49,9 @@ def get_schema(request):
         return JSONResponse({"message": "too many requests"}, status_code=500)
 
     cursor.execute(
-        "SELECT table_schema, table_name, column_name, data_type, ORDINAL_POSITION "
+        "SELECT table_schema, table_name, column_name, data_type, is_nullable, ORDINAL_POSITION "
         + "FROM information_schema.columns WHERE "
-        + "    (table_schema != 'information_schema') AND (is_nullable = 'NO') AND "
+        + "    (table_schema != 'information_schema' AND table_name != 'column_meta_data') AND "
         + "    ( "
         + "        (column_name = 'ID' AND column_key = 'PRI' AND extra = 'auto_increment') "
         + "        OR "
@@ -60,12 +61,21 @@ def get_schema(request):
     )
     result_rows = cursor.fetchall()
     schema = {}
-    for database_name, table_name, column_name, column_type, position in result_rows:
+    for (
+        database_name,
+        table_name,
+        column_name,
+        column_type,
+        is_nullable,
+        position,
+    ) in result_rows:
         if database_name not in schema.keys():
             schema[database_name] = {}
         if table_name not in schema[database_name].keys():
             schema[database_name][table_name] = []
-        schema[database_name][table_name].append((column_name, column_type.decode()))
+        schema[database_name][table_name].append(
+            (column_name, column_type.decode(), is_nullable == "YES")
+        )
 
     clean_schema = {}
 
@@ -85,10 +95,10 @@ def get_schema(request):
                     )
                     return None if (len(result) == 0) else result[0]
 
-                assert get_column_by_name("ID") == ("ID", "int")
-                assert get_column_by_name("date") == ("date", "int")
-                assert get_column_by_name("hour") == ("hour", "float")
-                assert get_column_by_name("sensor") == ("sensor", "varchar")
+                assert get_column_by_name("ID") == ("ID", "int", False)
+                assert get_column_by_name("date") == ("date", "int", False)
+                assert get_column_by_name("hour") == ("hour", "float", False)
+                assert get_column_by_name("sensor") == ("sensor", "varchar", False)
 
                 data_columns = list(
                     filter(
@@ -98,6 +108,7 @@ def get_schema(request):
                 )
                 print("data_colums: ", data_columns)
                 assert all([c[1] == "float" for c in data_columns])
+                # assert all([c[2] for c in data_columns])
                 if database_name not in clean_schema.keys():
                     clean_schema[database_name] = {}
                 clean_schema[database_name][table_name] = [c[0] for c in data_columns]
