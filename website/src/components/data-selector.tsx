@@ -57,7 +57,7 @@ const DataSelector = (props: {
     maxTime: { date: number; hour: number } | undefined;
 }) => {
     return (
-        <div className="w-full flex-row-left-bottom gap-x-2">
+        <div className="flex-row-left-bottom gap-x-2">
             {Object.keys(props.dbSchema).length > 0 && (
                 <_Select
                     label="database"
@@ -82,17 +82,6 @@ const DataSelector = (props: {
                     {Object.keys(props.dbSchema[props.selectedDb]).length == 0 && (
                         <div>No tables found</div>
                     )}
-                </>
-            )}
-            <div className="flex-grow" />
-            {props.maxTime !== undefined && (
-                <>
-                    <div className="text-sm h-7 text-slate-900">
-                        <span className="opacity-60">Newest data:</span>{' '}
-                        {props.maxTime.date},{' '}
-                        {transformTimeseries.renderTimeLabel(props.maxTime.hour)} (UTC)
-                    </div>
-                    <_RefreshButton onClick={props.triggerRefresh} />
                 </>
             )}
         </div>

@@ -22,8 +22,15 @@ const IndexPage = () => {
     );
 
     const [serverError, setServerError] = useState(false);
+    const [autoReload, setAutoReload] = useState(true);
 
-    // TODO: How to deal with non 200 responses from backend?
+    useEffect(() => {
+        const interval = setInterval(function () {
+            console.log('loading');
+        }, 3000);
+        return () => clearInterval(interval);
+    }, [autoReload]);
+
     async function loadDatabaseSchema() {
         try {
             setDbSchema(await backend.getSchema());
@@ -119,7 +126,7 @@ const IndexPage = () => {
         <div className="w-full min-h-screen px-4 py-20 flex-col-center-top bg-slate-150">
             <main
                 className={
-                    'hidden md:flex flex-col items-center w-full max-w-5xl gap-y-6 ' +
+                    'hidden md:flex flex-col w-full items-start max-w-5xl gap-y-6 ' +
                     selectedSensorCSS +
                     selectedTimeCSS
                 }
@@ -143,17 +150,26 @@ const IndexPage = () => {
                         )}
                         {dbSchema !== undefined && (
                             <>
-                                <DataSelector
-                                    {...{
-                                        dbSchema,
-                                        selectedDb,
-                                        setSelectedDb,
-                                        selectedTable,
-                                        setSelectedTable,
-                                        triggerRefresh: loadData,
-                                        maxTime,
-                                    }}
-                                />
+                                <div className="flex flex-row items-end w-full">
+                                    <DataSelector
+                                        {...{
+                                            dbSchema,
+                                            selectedDb,
+                                            setSelectedDb,
+                                            selectedTable,
+                                            setSelectedTable,
+                                            triggerRefresh: loadData,
+                                            maxTime,
+                                        }}
+                                    />
+                                    <div className="flex-grow" />
+                                    <TimeSelector
+                                        {...{
+                                            selectedTime,
+                                            setSelectedTime,
+                                        }}
+                                    />
+                                </div>
                                 {selectedDb !== undefined &&
                                     selectedTable !== undefined &&
                                     !stateIsComplete && (
@@ -178,12 +194,6 @@ const IndexPage = () => {
                                                     {...{
                                                         selectedSensors,
                                                         setSelectedSensors,
-                                                    }}
-                                                />
-                                                <TimeSelector
-                                                    {...{
-                                                        selectedTime,
-                                                        setSelectedTime,
                                                     }}
                                                 />
                                                 <div className="w-full h-px bg-slate-300" />
@@ -217,3 +227,19 @@ const IndexPage = () => {
 };
 
 export default IndexPage;
+
+/*
+
+<div className="flex-grow" />
+            {props.maxTime !== undefined && (
+                <>
+                    <div className="text-sm h-7 text-slate-900">
+                        <span className="opacity-60">Newest data:</span>{' '}
+                        {props.maxTime.date},{' '}
+                        {transformTimeseries.renderTimeLabel(props.maxTime.hour)} (UTC)
+                    </div>
+                    <_RefreshButton onClick={props.triggerRefresh} />
+                </>
+            )}
+            
+            */
