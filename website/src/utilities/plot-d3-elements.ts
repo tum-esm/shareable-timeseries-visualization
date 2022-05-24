@@ -1,4 +1,4 @@
-import { uniq, min, max, range } from 'lodash';
+import { uniq, min, max, range, defaultTo } from 'lodash';
 import * as d3 from 'd3';
 import transformTimeseries from './transform-timeseries';
 import { CONSTANTS } from './constants';
@@ -9,9 +9,11 @@ export const plotCircles = (
     data: { [key: string]: number | string }[],
     options: {
         decimal_places: number;
+        minimumY: number | undefined;
     }
 ) => {
     const sensorNames = uniq(data.map((d) => d['sensor'])).sort();
+    console.log({ column_name, options });
 
     CONSTANTS.TIMES.forEach((time) => {
         const _maxX: any = max(data.map((d) => d['hour']));
@@ -19,9 +21,16 @@ export const plotCircles = (
         const _deltaX = _maxX - _minX;
 
         const _data = data.filter((d) => d['hour'] >= _minX);
-        const _minY: any = min(_data.map((d) => d[column_name]));
-        const _maxY: any = max(_data.map((d) => d[column_name]));
-        const _deltaY = _maxY - _minY;
+
+        let _maxY: any = max(_data.map((d) => d[column_name]));
+        let _minY: any = min(_data.map((d) => d[column_name]));
+        let _deltaY: number = _maxY - _minY;
+        _maxY += 0.1 * _deltaY;
+        _minY -= 0.1 * _deltaY;
+        if (options.minimumY !== undefined) {
+            _minY = max([options.minimumY, _minY]);
+        }
+        _deltaY = _maxY - _minY;
 
         const _xScale: (x: number) => number = d3
             .scaleLinear()
@@ -29,7 +38,7 @@ export const plotCircles = (
             .range([40, 380]);
         const _yScale: (x: number) => number = d3
             .scaleLinear()
-            .domain([_maxY + 0.1 * _deltaY, _minY - 0.1 * _deltaY])
+            .domain([_maxY, _minY])
             .range([CONSTANTS.PLOT_Y_MIN, CONSTANTS.PLOT_Y_MAX]);
 
         const timedClasses = {
@@ -118,7 +127,7 @@ export const plotCircles = (
             );
             if (index % 2 === 0) {
                 _plotLine(36.5, 40, y, y, true);
-                const _yLabel = _maxY + 0.1 * _deltaY - (index / 10.0) * 1.2 * _deltaY;
+                const _yLabel = _maxY - (index / 10.0) * _deltaY;
                 _plotLabel(33, y, _yLabel.toFixed(options.decimal_places), 'end');
             }
         });

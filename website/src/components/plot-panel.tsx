@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { min, max, uniq, reduce, mean, first } from 'lodash';
+import { min, max, uniq, reduce, mean, first, defaultTo } from 'lodash';
 import * as d3 from 'd3';
 import { plotCircles } from '../utilities/plot-d3-elements';
 import icons from '../assets/icons';
@@ -58,8 +58,13 @@ export default function PlotPanel(props: {
     const unit = metaData[column_name].unit || undefined;
     const description = metaData[column_name].description || undefined;
     const decimal_places: number = Math.floor(
-        metaData[column_name].decimal_places || 3
+        defaultTo(metaData[column_name].decimal_places, 3)
     );
+    const minimumY: number | undefined = defaultTo(
+        metaData[column_name].minimum,
+        undefined
+    );
+
     const sensorNames: string[] = uniq(data.map((d): any => d['sensor'])).sort();
 
     function plotD3stuff(
@@ -69,7 +74,7 @@ export default function PlotPanel(props: {
         if (d3Container.current) {
             if (data.length > 0 && data[0][column_name] !== undefined) {
                 const svg = d3.select(d3Container.current);
-                plotCircles(svg, column_name, data, { decimal_places });
+                plotCircles(svg, column_name, data, { decimal_places, minimumY });
             }
         }
     }
