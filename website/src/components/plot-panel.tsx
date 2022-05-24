@@ -35,18 +35,10 @@ function TableCell(props: {
 
 export default function PlotPanel(props: {
     column_name: string;
-    data: { [key: string]: number | string }[];
-    metaData: {
-        [key: string]: {
-            unit: string | null;
-            description: string | null;
-            minimum: number | null;
-            decimal_places: number | null;
-            detection_limit: number | null;
-        };
-    };
-    selectedSensors: { [key: string]: boolean };
-    maxTime: { hour: number; date: number };
+    data: TYPES.DATA;
+    metaData: TYPES.META_DATA;
+    selectedSensors: TYPES.SELECTED_SENSORS;
+    maxTime: TYPES.MAX_TIME;
     selectedTime: TYPES.TimeBucket;
 }) {
     const { column_name, data, metaData, selectedSensors, maxTime, selectedTime } =
@@ -55,8 +47,8 @@ export default function PlotPanel(props: {
     const [descriptionIsVisible, setDescriptionIsVisible] = useState(false);
 
     const d3Container = useRef(null);
-    const unit = metaData[column_name].unit || undefined;
-    const description = metaData[column_name].description || undefined;
+    const unit = defaultTo(metaData[column_name].unit, undefined);
+    const description = defaultTo(metaData[column_name].description, undefined);
     const decimalPlaces: number = Math.floor(
         defaultTo(metaData[column_name].decimal_places, 3)
     );
@@ -196,7 +188,7 @@ export default function PlotPanel(props: {
                 <svg
                     className="relative z-0 my-4 no-selection"
                     ref={d3Container}
-                    viewBox={`0 0 400 150`}
+                    viewBox={`0 0 ${CONSTANTS.PLOT.width} ${CONSTANTS.PLOT.height}`}
                 />
             </div>
             <div

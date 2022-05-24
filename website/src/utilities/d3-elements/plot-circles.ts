@@ -20,11 +20,11 @@ function plotCircles(
     const _xScale: (x: number) => number = d3
         .scaleLinear()
         .domain([_range.minX, _range.maxX])
-        .range([40, 380]);
+        .range([CONSTANTS.PLOT.xMin, CONSTANTS.PLOT.xMax]);
     const _yScale: (x: number) => number = d3
         .scaleLinear()
         .domain([_range.maxY, _range.minY])
-        .range([CONSTANTS.PLOT_Y_MIN, CONSTANTS.PLOT_Y_MAX]);
+        .range([CONSTANTS.PLOT.yMin, CONSTANTS.PLOT.yMax]);
 
     const timedCircleClasses = `circle-group-${options.time.replace(' ', '-')}`;
     const indexedCircleClass = (index: number) => `circle-group-${index}`;
@@ -41,7 +41,7 @@ function plotCircles(
         .merge(_timedCircleGroups)
         .attr(
             'class',
-            (index: number) => `${timedCircleClasses} ${indexedCircleClass(index)}`
+            (index: number) => `${timedCircleClasses} ${indexedCircleClass(index)} z-0`
         )
         .attr('fill', (index: number) => CONSTANTS.HEX_COLORS[index]);
 

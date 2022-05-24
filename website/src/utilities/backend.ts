@@ -1,4 +1,4 @@
-import { CONSTANTS } from './constants';
+import { CONSTANTS, TYPES } from './constants';
 
 const backend = {
     getSchema: async (): Promise<any> => {
@@ -19,7 +19,7 @@ const backend = {
             throw 'request failed';
         }
     },
-    getMetaData: async (database: string, table: string): Promise<any> => {
+    getMetaData: async (database: string, table: string): Promise<TYPES.META_DATA> => {
         const response = await fetch(
             CONSTANTS.API + `/meta-data?database=${database}&table=${table}`
         );

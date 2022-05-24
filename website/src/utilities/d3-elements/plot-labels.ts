@@ -18,28 +18,30 @@ function plotLabels(
     }
     _timedLabelGroup = svg
         .append('g')
-        .attr('class', `${options.className} text-slate-800 z-0`);
+        .attr('class', `${options.className} text-slate-800 z-20`);
 
     // x labels
-    utilityFunctions.sectionize(40, 380, 4).forEach((x, index) => {
-        const _xLabel = utilityFunctions.renderTimeLabel(
-            range.minX + (index / 4) * range.deltaX
-        );
-        _plotLabel(_timedLabelGroup, {
-            x: x,
-            y: CONSTANTS.PLOT_Y_MAX + 17,
-            text: _xLabel,
-            align: 'middle',
+    utilityFunctions
+        .sectionize(CONSTANTS.PLOT.xMin, CONSTANTS.PLOT.xMax, 4)
+        .forEach((x, index) => {
+            const _xLabel = utilityFunctions.renderTimeLabel(
+                range.minX + (index / 4) * range.deltaX
+            );
+            _plotLabel(_timedLabelGroup, {
+                x: x,
+                y: CONSTANTS.PLOT.yMax + 17,
+                text: _xLabel,
+                align: 'middle',
+            });
         });
-    });
 
     // y labels
     utilityFunctions
-        .sectionize(CONSTANTS.PLOT_Y_MIN, CONSTANTS.PLOT_Y_MAX, 5)
+        .sectionize(CONSTANTS.PLOT.yMin, CONSTANTS.PLOT.yMax, 5)
         .forEach((y, index) => {
             const _yLabel = range.maxY - (index / 5) * range.deltaY;
             _plotLabel(_timedLabelGroup, {
-                x: 33,
+                x: CONSTANTS.PLOT.xMin - 7,
                 y: y,
                 text: _yLabel.toFixed(options.decimalPlaces),
                 align: 'end',

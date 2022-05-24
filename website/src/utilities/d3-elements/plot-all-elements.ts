@@ -4,6 +4,12 @@ import plotLines from './plot-lines';
 import plotLabels from './plot-labels';
 import plotCircles from './plot-circles';
 
+/*
+z-0: circles
+z-10: white boundaries
+z-20: lines, labels
+*/
+
 function plotAllElements(
     svg: any,
     column_name: string,

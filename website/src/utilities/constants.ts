@@ -11,7 +11,13 @@ export namespace TYPES {
     export type DATA = { [key: string]: string | number }[];
 
     export type META_DATA = {
-        [key: string]: { unit: string | null; description: string | null };
+        [key: string]: {
+            unit: string | null;
+            description: string | null;
+            minimum: number | null;
+            decimal_places: number | null;
+            detection_limit: number | null;
+        };
     };
 
     export type SELECTED_SENSORS = { [key: string]: boolean };
@@ -26,8 +32,14 @@ export const CONSTANTS: {
     TEXT_COLORS_LIGHT: string[];
     FOCUS_COLORS: string[];
     SVG_HEIGHT: number;
-    PLOT_Y_MIN: number;
-    PLOT_Y_MAX: number;
+    PLOT: {
+        xMin: number;
+        xMax: number;
+        yMin: number;
+        yMax: number;
+        width: number;
+        height: number;
+    };
     TIMES: TYPES.TimeBucket[];
     HOUR_FRACTIONS: { [key in TYPES.TimeBucket]: number };
     CIRCLE_RADII: { [key in TYPES.TimeBucket]: number };
@@ -90,8 +102,14 @@ export const CONSTANTS: {
         'focus:ring-red-500',
     ],
     SVG_HEIGHT: 150,
-    PLOT_Y_MIN: 5,
-    PLOT_Y_MAX: 130,
+    PLOT: {
+        xMin: 40,
+        xMax: 380,
+        yMin: 5,
+        yMax: 130,
+        width: 400,
+        height: 150,
+    },
     TIMES: ['10 minutes', '30 minutes', '2 hours', '6 hours', '24 hours'],
     HOUR_FRACTIONS: {
         '10 minutes': 0.1666666,
