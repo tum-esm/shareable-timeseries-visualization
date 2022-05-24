@@ -48,51 +48,59 @@ def get_schema(request):
         return JSONResponse({"message": "too many requests"}, status_code=500)
 
     cursor.execute(
-        "SELECT table_schema, table_name, column_name, data_type "
+        "SELECT table_schema, table_name, column_name, data_type, ORDINAL_POSITION "
         + "FROM information_schema.columns WHERE "
         + "    (table_schema != 'information_schema') AND (is_nullable = 'NO') AND "
         + "    ( "
         + "        (column_name = 'ID' AND column_key = 'PRI' AND extra = 'auto_increment') "
         + "        OR "
         + "        (column_name != 'ID' AND column_key = '' AND extra = '') "
-        + "    );",
+        + "    ) ORDER BY ORDINAL_POSITION;",
         (),
     )
     result_rows = cursor.fetchall()
     schema = {}
-    for database_name, table_name, column_name, column_type in result_rows:
+    for database_name, table_name, column_name, column_type, position in result_rows:
         if database_name not in schema.keys():
             schema[database_name] = {}
         if table_name not in schema[database_name].keys():
-            schema[database_name][table_name] = {}
-        schema[database_name][table_name][column_name] = column_type
+            schema[database_name][table_name] = []
+        schema[database_name][table_name].append((column_name, column_type.decode()))
 
     clean_schema = {}
 
     for database_name in schema.keys():
         for table_name in schema[database_name].keys():
             try:
-                column_names = schema[database_name][table_name].keys()
-                assert len(column_names) > 4
-                assert schema[database_name][table_name]["ID"] == "int"
-                assert schema[database_name][table_name]["date"] == "int"
-                assert schema[database_name][table_name]["hour"] == "float"
-                assert schema[database_name][table_name]["sensor"] == "varchar"
-                data_column_names = list(
+                columns = schema[database_name][table_name]
+                assert len(columns) > 4
+                print("columns: ", columns)
+
+                def get_column_by_name(column_name):
+                    result = list(
+                        filter(
+                            lambda c: c[0] == column_name,
+                            columns,
+                        )
+                    )
+                    return None if (len(result) == 0) else result[0]
+
+                assert get_column_by_name("ID") == ("ID", "int")
+                assert get_column_by_name("date") == ("date", "int")
+                assert get_column_by_name("hour") == ("hour", "float")
+                assert get_column_by_name("sensor") == ("sensor", "varchar")
+
+                data_columns = list(
                     filter(
-                        lambda c: c not in ["ID", "date", "hour", "sensor"],
-                        column_names,
+                        lambda c: c[0] not in ["ID", "date", "hour", "sensor"],
+                        columns,
                     )
                 )
-                assert all(
-                    [
-                        schema[database_name][table_name][c] == "float"
-                        for c in data_column_names
-                    ]
-                )
+                print("data_colums: ", data_columns)
+                assert all([c[1] == "float" for c in data_columns])
                 if database_name not in clean_schema.keys():
                     clean_schema[database_name] = {}
-                clean_schema[database_name][table_name] = data_column_names
+                clean_schema[database_name][table_name] = [c[0] for c in data_columns]
             except (AssertionError, KeyError) as e:
                 pass
 
