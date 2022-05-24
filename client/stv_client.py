@@ -260,9 +260,10 @@ class STVClient:
             assert columns[2][:3] == ("hour", b"float", "NO")
             assert columns[3][:3] == ("sensor", b"varchar(64)", "NO")
             for index, column_name in enumerate(self.data_columns):
-                assert columns[4 + index][:3] == (column_name, b"float", "")
+                assert columns[4 + index][:3] == (column_name, b"float", "YES")
             return True
-        except AssertionError:
+        except AssertionError as e:
+            print(e)
             return False
 
     def insert_data(self, sensor_name: str, data: dict):

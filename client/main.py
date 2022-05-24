@@ -18,7 +18,7 @@ def example_procedure():
         units={"ch4": "ppb", "co2": "ppm"},
         descriptions={"ch4": "The cows are at fault, for sure"},
         minimums={"ch4": 0, "co2": 0},
-        decimal_placess={"co2": 1, "ch4": 4},
+        decimal_placess={"co2": 1, "ch4": 3},
         detection_limits={"ch4": 0.01},
         print_stuff=True,
     )
