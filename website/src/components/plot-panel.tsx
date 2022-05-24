@@ -57,11 +57,15 @@ export default function PlotPanel(props: {
     const d3Container = useRef(null);
     const unit = metaData[column_name].unit || undefined;
     const description = metaData[column_name].description || undefined;
-    const decimal_places: number = Math.floor(
+    const decimalPlaces: number = Math.floor(
         defaultTo(metaData[column_name].decimal_places, 3)
     );
     const minimumY: number | undefined = defaultTo(
         metaData[column_name].minimum,
+        undefined
+    );
+    const detectionLimit: number | undefined = defaultTo(
+        metaData[column_name].detection_limit,
         undefined
     );
 
@@ -74,7 +78,11 @@ export default function PlotPanel(props: {
         if (d3Container.current) {
             if (data.length > 0 && data[0][column_name] !== undefined) {
                 const svg = d3.select(d3Container.current);
-                plotCircles(svg, column_name, data, { decimal_places, minimumY });
+                plotCircles(svg, column_name, data, {
+                    decimalPlaces,
+                    minimumY,
+                    detectionLimit,
+                });
             }
         }
     }
@@ -98,7 +106,7 @@ export default function PlotPanel(props: {
         const _stats = {
             current:
                 _currentValue !== undefined
-                    ? _currentValue.toFixed(decimal_places)
+                    ? _currentValue.toFixed(decimalPlaces)
                     : '-',
             min: '-',
             mean: '-',
@@ -106,9 +114,9 @@ export default function PlotPanel(props: {
         };
         const _xs = _sensorData.map((d): any => d[column_name]);
         if (_xs.length > 0) {
-            _stats.min = min(_xs).toFixed(decimal_places);
-            _stats.mean = mean(_xs).toFixed(decimal_places);
-            _stats.max = max(_xs).toFixed(decimal_places);
+            _stats.min = min(_xs).toFixed(decimalPlaces);
+            _stats.mean = mean(_xs).toFixed(decimalPlaces);
+            _stats.max = max(_xs).toFixed(decimalPlaces);
         }
 
         return { [_sensorName]: _stats };
