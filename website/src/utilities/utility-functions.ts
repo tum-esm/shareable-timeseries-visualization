@@ -1,4 +1,8 @@
-import { reduce } from 'lodash';
+import { range, reduce } from 'lodash';
+
+function _sectionize(from: number, to: number, steps: number) {
+    return range(from, to + 1, (to - from) / steps);
+}
 
 const _mergeTimeColumns = (rawData: any[], columns: string[]) => {
     if (rawData.length === 0) {
@@ -30,9 +34,10 @@ const _renderTimeLabel = (hour: number) => {
     );
 };
 
-const transformTimeseries = {
+const utilityFunctions = {
+    sectionize: _sectionize,
     mergeTimeColumns: _mergeTimeColumns,
     renderTimeLabel: _renderTimeLabel,
 };
 
-export default transformTimeseries;
+export default utilityFunctions;

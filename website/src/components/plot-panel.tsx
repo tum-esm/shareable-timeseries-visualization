@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { min, max, uniq, reduce, mean, first, defaultTo } from 'lodash';
 import * as d3 from 'd3';
-import { plotCircles } from '../utilities/plot-d3-elements';
+import plotAllElements from '../utilities/d3-elements/plot-all-elements';
 import icons from '../assets/icons';
 import { CONSTANTS, TYPES } from '../utilities/constants';
 
@@ -78,7 +78,7 @@ export default function PlotPanel(props: {
         if (d3Container.current) {
             if (data.length > 0 && data[0][column_name] !== undefined) {
                 const svg = d3.select(d3Container.current);
-                plotCircles(svg, column_name, data, {
+                plotAllElements(svg, column_name, data, {
                     decimalPlaces,
                     minimumY,
                     detectionLimit,

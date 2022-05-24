@@ -1,5 +1,5 @@
 import React from 'react';
-import transformTimeseries from '../utilities/transform-timeseries';
+import transformTimeseries from '../utilities/utility-functions';
 import icons from '../assets/icons';
 
 function _Select(props: {

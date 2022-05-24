@@ -6,7 +6,7 @@ import SensorSelector from '../components/sensor-selector';
 import TimeSelector from '../components/time-selector';
 import backend from '../utilities/backend';
 import { TYPES, CONSTANTS } from '../utilities/constants';
-import transformTimeseries from '../utilities/transform-timeseries';
+import transformTimeseries from '../utilities/utility-functions';
 
 const IndexPage = () => {
     const [dbSchema, setDbSchema] = useState<TYPES.DB_SCHEMA | undefined>(undefined);
