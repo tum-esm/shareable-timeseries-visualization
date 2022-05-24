@@ -1,12 +1,11 @@
 import React from 'react';
-import transformTimeseries from '../utilities/utility-functions';
-import icons from '../assets/icons';
 
 function _Select(props: {
     label: string;
     options: string[];
     selectedValue: string | undefined;
     setSelectedValue(s: string | undefined): void;
+    disabled: boolean;
 }) {
     const { options, selectedValue, setSelectedValue } = props;
     return (
@@ -19,10 +18,13 @@ function _Select(props: {
                 className="block w-full py-2 pl-3 pr-10 mt-1 text-base rounded-md shadow-sm border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 value={selectedValue}
                 onChange={(e: any) =>
-                    setSelectedValue(
-                        e.target.value !== '-' ? e.target.value : undefined
-                    )
+                    props.disabled
+                        ? {}
+                        : setSelectedValue(
+                              e.target.value !== '-' ? e.target.value : undefined
+                          )
                 }
+                disabled={props.disabled}
             >
                 <option value={undefined}>-</option>
                 {options.map((v, i) => (
@@ -35,26 +37,13 @@ function _Select(props: {
     );
 }
 
-function _RefreshButton(props: { onClick(): void }) {
-    return (
-        <button
-            name="location"
-            className="p-1.5 text-base bg-white border rounded-md border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-slate-800 shadow-sm"
-            onClick={props.onClick}
-        >
-            <div className="w-5 h-5 p-0.5">{icons.refresh}</div>
-        </button>
-    );
-}
-
 const DataSelector = (props: {
     dbSchema: { [key: string]: { [key: string]: string[] } };
     selectedDb: string | undefined;
     setSelectedDb(s: string | undefined): void;
     selectedTable: string | undefined;
     setSelectedTable(s: string | undefined): void;
-    triggerRefresh(): void;
-    maxTime: { date: number; hour: number } | undefined;
+    isReloading: boolean;
 }) => {
     return (
         <div className="flex-row-left-bottom gap-x-2">
@@ -64,6 +53,7 @@ const DataSelector = (props: {
                     options={Object.keys(props.dbSchema)}
                     selectedValue={props.selectedDb}
                     setSelectedValue={props.setSelectedDb}
+                    disabled={props.isReloading}
                 />
             )}
             {Object.keys(props.dbSchema).length == 0 && <div>No databases found</div>}
@@ -76,6 +66,7 @@ const DataSelector = (props: {
                                 options={Object.keys(props.dbSchema[props.selectedDb])}
                                 selectedValue={props.selectedTable}
                                 setSelectedValue={props.setSelectedTable}
+                                disabled={props.isReloading}
                             />
                         </>
                     )}

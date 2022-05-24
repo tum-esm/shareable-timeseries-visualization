@@ -10,7 +10,7 @@ function _Checkbox(props: {
     return (
         <button
             className={
-                'relative flex-row-center px-3 py-1.5 first:rounded-l-md last:rounded-r-md ' +
+                'relative flex-row-center px-3 py-1 first:rounded-l-md last:rounded-r-md ' +
                 ' border border-slate-300 -ml-px first:ml-0 shadow-sm ' +
                 (props.value ? 'bg-white ' : 'bg-slate-100 opacity-60 ')
             }
@@ -18,7 +18,7 @@ function _Checkbox(props: {
         >
             <div
                 className={
-                    'h-3 w-3 rounded-sm flex-shrink-0 ' +
+                    'h-2.5 w-2.5 rounded-sm flex-shrink-0 ' +
                     CONSTANTS.BG_COLORS[props.sensorIndex]
                 }
             />

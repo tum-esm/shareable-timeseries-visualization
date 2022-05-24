@@ -7,6 +7,7 @@ import TimeSelector from '../components/time-selector';
 import backend from '../utilities/backend';
 import { TYPES, CONSTANTS } from '../utilities/constants';
 import transformTimeseries from '../utilities/utility-functions';
+import ReloadSelector from '../components/reload-selector';
 
 const IndexPage = () => {
     const [dbSchema, setDbSchema] = useState<TYPES.DB_SCHEMA | undefined>(undefined);
@@ -22,14 +23,17 @@ const IndexPage = () => {
     );
 
     const [serverError, setServerError] = useState(false);
-    const [autoReload, setAutoReload] = useState(true);
+    const [autoReload, setAutoReload] = useState(false);
+    const [isReloading, setIsReloading] = useState(false);
 
     useEffect(() => {
-        const interval = setInterval(function () {
-            console.log('loading');
-        }, 3000);
-        return () => clearInterval(interval);
-    }, [autoReload]);
+        if (autoReload) {
+            const interval = setInterval(function () {
+                loadData();
+            }, 3000);
+            return () => clearInterval(interval);
+        }
+    }, [autoReload, dbSchema, selectedDb, selectedTable]);
 
     async function loadDatabaseSchema() {
         try {
@@ -39,26 +43,27 @@ const IndexPage = () => {
         }
     }
     async function loadData() {
-        setAllData(undefined);
-        setMaxTime(undefined);
-        setMetaData(undefined);
-        console.log('load data');
+        console.log('loading data');
         if (
             dbSchema !== undefined &&
             selectedDb !== undefined &&
             selectedTable !== undefined
         ) {
+            setIsReloading(true);
             try {
                 const _rawData = await backend.getData(selectedDb, selectedTable);
+                const _metaData = await backend.getMetaData(selectedDb, selectedTable);
                 const { newMaxTime, newData } = transformTimeseries.mergeTimeColumns(
                     _rawData,
                     dbSchema[selectedDb][selectedTable]
                 );
                 setAllData(newData);
                 setMaxTime(newMaxTime);
-                setMetaData(await backend.getMetaData(selectedDb, selectedTable));
+                setMetaData(_metaData);
+                setIsReloading(false);
             } catch {
                 setServerError(true);
+                setIsReloading(false);
             }
         }
     }
@@ -87,8 +92,12 @@ const IndexPage = () => {
     }, []);
 
     useEffect(() => {
+        setAutoReload(false);
+        setAllData(undefined);
+        setMaxTime(undefined);
+        setMetaData(undefined);
         loadData();
-    }, [selectedTable]);
+    }, [dbSchema, selectedDb, selectedTable]);
 
     useEffect(() => {
         setSelectedTable(undefined);
@@ -158,17 +167,18 @@ const IndexPage = () => {
                                             setSelectedDb,
                                             selectedTable,
                                             setSelectedTable,
-                                            triggerRefresh: loadData,
-                                            maxTime,
+                                            isReloading,
                                         }}
                                     />
                                     <div className="flex-grow" />
-                                    <TimeSelector
-                                        {...{
-                                            selectedTime,
-                                            setSelectedTime,
-                                        }}
-                                    />
+                                    {stateIsComplete && (
+                                        <TimeSelector
+                                            {...{
+                                                selectedTime,
+                                                setSelectedTime,
+                                            }}
+                                        />
+                                    )}
                                 </div>
                                 {selectedDb !== undefined &&
                                     selectedTable !== undefined &&
@@ -190,12 +200,25 @@ const IndexPage = () => {
                                         {allData.length > 0 && (
                                             <>
                                                 <div className="w-full h-px bg-slate-300" />
-                                                <SensorSelector
-                                                    {...{
-                                                        selectedSensors,
-                                                        setSelectedSensors,
-                                                    }}
-                                                />
+                                                <div className="flex flex-row items-start w-full">
+                                                    <SensorSelector
+                                                        {...{
+                                                            selectedSensors,
+                                                            setSelectedSensors,
+                                                        }}
+                                                    />
+                                                    <div className="flex-grow" />
+                                                    <ReloadSelector
+                                                        {...{
+                                                            maxTime,
+                                                            autoReload,
+                                                            setAutoReload,
+                                                            triggerManualReload:
+                                                                loadData,
+                                                            isReloading,
+                                                        }}
+                                                    />
+                                                </div>
                                                 <div className="w-full h-px bg-slate-300" />
                                                 {dbSchema[selectedDb][
                                                     selectedTable
