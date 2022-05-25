@@ -27,7 +27,7 @@ def example_procedure():
 
     while True:
         try:
-            for sensor_name in ["sensor-1", "sensor-2", "sensor-3", "sensor-4"]:
+            for sensor_name in ["sensor-1", "sensor-2", "sensor-3"]:
                 client.insert_data(
                     sensor_name, {"ch4": rnd(1.8, 1.95), "co2": rnd(414.0, 423.0)}
                 )

@@ -1,23 +1,42 @@
-import json
-import mysql.connector
-import mysql.connector.pooling
+import os
 from datetime import datetime, timedelta
 
-from starlette.applications import Starlette
-from starlette.responses import JSONResponse
-from starlette.routing import Route
-from starlette.middleware import Middleware
-from starlette.middleware.cors import CORSMiddleware
+import databases
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
-connection_pool = mysql.connector.pooling.MySQLConnectionPool(
-    pool_name="public_pool",
-    pool_size=20,
-    pool_reset_session=True,
-    host="esm-mysql-public-do-user-7320955-0.b.db.ondigitalocean.com",
-    port=25060,
-    user="public",
-    password="AVNS_dCglpmL1fML93ap",
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
+
+db = databases.Database(
+    f"mysql://{os.environ.get('MYSQL_USER')}:{os.environ.get('MYSQL_PASSWORD')}"
+    + "@esm-mysql-public-do-user-7320955-0.b.db.ondigitalocean.com:25060?ssl-mode=REQUIRED",
+    echo=True,
+)
+
+
+async def run_sql_query(query):
+    try:
+        return await db.fetch_all(query)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"sql_query_failed: {e}")
+
+
+def validate_query_params(database: str, table: str):
+    try:
+        assert string_is_clean(database)
+        assert string_is_clean(table)
+    except AssertionError:
+        raise HTTPException(
+            status_code=400, detail="missing or invalid query parameters"
+        )
 
 
 def string_is_clean(string: str):
@@ -35,20 +54,26 @@ def string_is_clean(string: str):
 
 
 def enforce_date_on_datapoint(date: int, datapoint: tuple):
-    if datapoint[1] != date:
-        datapoint[1] = date
-        datapoint[2] -= 24
-    return datapoint
+    new_datapoint = list(datapoint)
+    if new_datapoint[1] != date:
+        new_datapoint[1] = date
+        new_datapoint[2] -= 24
+    return new_datapoint
 
 
-def get_schema(request):
-    try:
-        connection = connection_pool.get_connection()
-        cursor = connection.cursor()
-    except (mysql.connector.errors.OperationalError, mysql.connector.errors.PoolError):
-        return JSONResponse({"message": "too many requests"}, status_code=500)
+@app.on_event("startup")
+async def startup():
+    await db.connect()
 
-    cursor.execute(
+
+@app.on_event("shutdown")
+async def shutdown():
+    await db.disconnect()
+
+
+@app.get("/schema")
+async def get_schema():
+    result_rows = await run_sql_query(
         "SELECT table_schema, table_name, column_name, data_type, is_nullable, ORDINAL_POSITION "
         + "FROM information_schema.columns WHERE "
         + "    (table_schema != 'information_schema' AND table_name != 'column_meta_data') AND "
@@ -57,9 +82,7 @@ def get_schema(request):
         + "        OR "
         + "        (column_name != 'ID' AND column_key = '' AND extra = '') "
         + "    ) ORDER BY ORDINAL_POSITION;",
-        (),
     )
-    result_rows = cursor.fetchall()
     schema = {}
     for (
         database_name,
@@ -74,7 +97,7 @@ def get_schema(request):
         if table_name not in schema[database_name].keys():
             schema[database_name][table_name] = []
         schema[database_name][table_name].append(
-            (column_name, column_type.decode(), is_nullable == "YES")
+            (column_name, column_type, is_nullable == "YES")
         )
 
     clean_schema = {}
@@ -84,7 +107,6 @@ def get_schema(request):
             try:
                 columns = schema[database_name][table_name]
                 assert len(columns) > 4
-                print("columns: ", columns)
 
                 def get_column_by_name(column_name):
                     result = list(
@@ -106,8 +128,8 @@ def get_schema(request):
                         columns,
                     )
                 )
-                print("data_colums: ", data_columns)
                 assert all([c[1] == "float" for c in data_columns])
+
                 # assert all([c[2] for c in data_columns])
                 if database_name not in clean_schema.keys():
                     clean_schema[database_name] = {}
@@ -115,99 +137,44 @@ def get_schema(request):
             except (AssertionError, KeyError) as e:
                 pass
 
-    cursor.close()
-    connection.close()
-    return JSONResponse(clean_schema)
+    return clean_schema
 
 
-def get_data(request):
-    try:
-        database_name = request.query_params["database"]
-        table_name = request.query_params["table"]
-        assert string_is_clean(database_name)
-        assert string_is_clean(table_name)
-    except KeyError:
-        return JSONResponse(
-            {"message": "missing or invalid query parameters"}, status_code=400
-        )
+@app.get("/data")
+async def get_data(database: str = None, table: str = None):
+    validate_query_params(database, table)
 
-    try:
-        connection = connection_pool.get_connection()
-        cursor = connection.cursor()
-    except (mysql.connector.errors.OperationalError, mysql.connector.errors.PoolError):
-        return JSONResponse({"message": "too many requests"}, status_code=500)
+    result_rows_1 = await run_sql_query(
+        f"SELECT date, hour FROM {database}.{table} "
+        + "ORDER BY date DESC, hour DESC LIMIT 1"
+    )
 
-    try:
-        cursor.execute(
-            f"SELECT date, hour FROM {database_name}.{table_name} "
-            + "ORDER BY date DESC, hour DESC LIMIT 1",
-            (),
-        )
-        result_rows = cursor.fetchall()
-    except mysql.connector.errors.ProgrammingError:
-        cursor.close()
-        connection.close()
-        return JSONResponse({"message": "invalid database/table"}, status_code=400)
-
-    if len(result_rows) == 0:
-        cursor.close()
-        connection.close()
-        return JSONResponse([])
+    if len(result_rows_1) == 0:
+        return []
 
     # Starting with the newest measurement, return the newest 24 hours of data
-    newest_date, newest_hour = result_rows[0]
+    newest_date, newest_hour = result_rows_1[0]
     oldest_date = datetime.strftime(
         datetime.strptime(str(newest_date), "%Y%m%d") - timedelta(days=1), "%Y%m%d"
     )
-    cursor.execute(
-        f"SELECT * FROM {database_name}.{table_name} WHERE ("
+    result_rows_2 = await run_sql_query(
+        f"SELECT * FROM {database}.{table} WHERE ("
         + f"  (date = {newest_date}) OR "
         + f"  ((date = {oldest_date}) AND (hour >= {newest_hour}))"
-        + ") ORDER BY date DESC, hour DESC",
-        (),
+        + ") ORDER BY date DESC, hour DESC"
     )
-    results = cursor.fetchall()
-    cursor.close()
-    connection.close()
-    return JSONResponse(
-        list(map(lambda d: enforce_date_on_datapoint(newest_date, d), results))
+    return list(map(lambda d: enforce_date_on_datapoint(newest_date, d), result_rows_2))
+
+
+@app.get("/meta-data")
+async def get_meta_data(database: str = None, table: str = None):
+    validate_query_params(database, table)
+
+    result_rows = await run_sql_query(
+        "SELECT column_name, unit, description, minimum, detection_limit, decimal_places "
+        + f"FROM {database}.column_meta_data WHERE "
+        + f"table_name='{table}'"
     )
-
-
-def get_meta_data(request):
-    try:
-        database_name = request.query_params["database"]
-        table_name = request.query_params["table"]
-        assert string_is_clean(database_name)
-        assert string_is_clean(table_name)
-    except KeyError:
-        return JSONResponse(
-            {"message": "missing or invalid query parameters"}, status_code=400
-        )
-
-    assert string_is_clean(database_name)
-    assert string_is_clean(table_name)
-
-    try:
-        connection = connection_pool.get_connection()
-        cursor = connection.cursor()
-    except (mysql.connector.errors.OperationalError, mysql.connector.errors.PoolError):
-        return JSONResponse({"message": "too many requests"}, status_code=500)
-
-    try:
-        cursor.execute(
-            "SELECT column_name, unit, description, minimum, detection_limit, decimal_places "
-            + f"FROM {database_name}.column_meta_data WHERE "
-            + f"table_name='{table_name}'",
-            (),
-        )
-        result_rows = cursor.fetchall()
-        cursor.close()
-        connection.close()
-    except mysql.connector.errors.ProgrammingError:
-        cursor.close()
-        connection.close()
-        return JSONResponse({"message": "invalid database/table"}, status_code=400)
 
     meta_data = {}
     for row in result_rows:
@@ -220,14 +187,4 @@ def get_meta_data(request):
             "detection_limit": row[4],
             "decimal_places": row[5],
         }
-    return JSONResponse(meta_data)
-
-
-app = Starlette(
-    routes=[
-        Route("/schema", get_schema),
-        Route("/data", get_data),
-        Route("/meta-data", get_meta_data),
-    ],
-    middleware=[Middleware(CORSMiddleware, allow_origins=["*"])],
-)
+    return meta_data
