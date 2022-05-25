@@ -6,12 +6,16 @@ authors = ["Moritz Makowski <moritz.makowski@tum.de>"]
 
 [tool.poetry.dependencies]
 python = "3.9"
-mysql-connector-python = "8.0.29"
 uvicorn = "0.17.6"
-starlette = "^0.20.0"
+databases = "^0.5.5"
+fastapi = "^0.78.0"
+aiomysql = "^0.1.1"
+cryptography = "^37.0.2"
 
 [tool.poetry.dev-dependencies]
 black = "22.3.0"
+python-dotenv = "^0.20.0"
+requests = "^2.27.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

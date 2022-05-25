@@ -6,16 +6,21 @@ const TimeSelector = (props: {
     setSelectedTime(s: TYPES.TimeBucket): void;
 }) => {
     return (
-        <div className="flex w-full -mt-4 gap-x-1">
-            <span className="pr-0.5">Show the latest:</span>
+        <div
+            className={
+                'text-sm border divide-x rounded-md ' +
+                'shadow-sm bg-slate-100 flex-row-center divide-slate-300 ' +
+                'text-slate-400 border-slate-300 my-1 whitespace-nowrap'
+            }
+        >
             {CONSTANTS.TIMES.map((t) => (
                 <button
                     key={t}
                     className={
-                        'px-2 py-0.5 border rounded-md border-slate-300 text-sm ' +
+                        'px-2 py-1 ' +
                         (props.selectedTime === t
-                            ? 'bg-white text-slate-950 shadow-sm '
-                            : 'bg-slate-100 text-slate-500')
+                            ? 'bg-white first:rounded-l-md last:rounded-r-md text-black '
+                            : '')
                     }
                     onClick={() => props.setSelectedTime(t)}
                 >

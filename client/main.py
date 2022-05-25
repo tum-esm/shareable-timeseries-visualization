@@ -17,6 +17,9 @@ def example_procedure():
         data_columns=["ch4", "co2"],
         units={"ch4": "ppb", "co2": "ppm"},
         descriptions={"ch4": "The cows are at fault, for sure"},
+        minimums={"ch4": 0, "co2": 0},
+        decimal_placess={"co2": 1, "ch4": 3},
+        detection_limits={"ch4": 0.01},
         print_stuff=True,
     )
 
@@ -24,7 +27,7 @@ def example_procedure():
 
     while True:
         try:
-            for sensor_name in ["sensor-1", "sensor-2", "sensor-3", "sensor-4"]:
+            for sensor_name in ["sensor-1", "sensor-2", "sensor-3"]:
                 client.insert_data(
                     sensor_name, {"ch4": rnd(1.8, 1.95), "co2": rnd(414.0, 423.0)}
                 )

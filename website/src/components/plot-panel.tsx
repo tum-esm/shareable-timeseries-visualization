@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { min, max, uniq, reduce, mean, first } from 'lodash';
+import { min, max, uniq, reduce, mean, first, defaultTo, take } from 'lodash';
 import * as d3 from 'd3';
-import { plotCircles } from '../utilities/plot-d3-elements';
+import plotAllElements from '../utilities/d3-elements/plot-all-elements';
 import icons from '../assets/icons';
 import { CONSTANTS, TYPES } from '../utilities/constants';
 
@@ -35,18 +35,32 @@ function TableCell(props: {
 
 export default function PlotPanel(props: {
     column_name: string;
-    data: { [key: string]: number | string }[];
-    metaData: { [key: string]: { unit: string | null; description: string | null } };
-    selectedSensors: { [key: string]: boolean };
-    maxTime: { hour: number; date: number };
+    data: TYPES.DATA;
+    metaData: TYPES.META_DATA;
+    selectedSensors: TYPES.SELECTED_SENSORS;
+    maxTime: TYPES.MAX_TIME;
     selectedTime: TYPES.TimeBucket;
 }) {
     const { column_name, data, metaData, selectedSensors, maxTime, selectedTime } =
         props;
-    console.log({ props });
     const [descriptionIsVisible, setDescriptionIsVisible] = useState(false);
 
     const d3Container = useRef(null);
+    const unit = defaultTo(metaData[column_name].unit, undefined);
+    const description = defaultTo(metaData[column_name].description, undefined);
+    const decimalPlaces: number = Math.floor(
+        defaultTo(metaData[column_name].decimal_places, 3)
+    );
+    const minimumY: number | undefined = defaultTo(
+        metaData[column_name].minimum,
+        undefined
+    );
+    const detectionLimit: number | undefined = defaultTo(
+        metaData[column_name].detection_limit,
+        undefined
+    );
+
+    const sensorNames: string[] = uniq(data.map((d): any => d['sensor'])).sort();
 
     function plotD3stuff(
         column_name: string,
@@ -55,7 +69,11 @@ export default function PlotPanel(props: {
         if (d3Container.current) {
             if (data.length > 0 && data[0][column_name] !== undefined) {
                 const svg = d3.select(d3Container.current);
-                plotCircles(svg, column_name, data);
+                plotAllElements(svg, column_name, data, {
+                    decimalPlaces,
+                    minimumY,
+                    detectionLimit,
+                });
             }
         }
     }
@@ -63,10 +81,6 @@ export default function PlotPanel(props: {
     useEffect(() => {
         plotD3stuff(column_name, data);
     }, [d3Container.current, column_name, data]);
-
-    const unit = metaData[column_name]?.unit || undefined;
-    const description = metaData[column_name]?.description || undefined;
-    const sensorNames: string[] = uniq(data.map((d): any => d['sensor'])).sort();
 
     function sensorStats(
         _data: { [key: string]: number | string }[],
@@ -81,16 +95,19 @@ export default function PlotPanel(props: {
                 .map((d): any => d[column_name])
         );
         const _stats = {
-            current: _currentValue !== undefined ? _currentValue.toFixed(3) : '-',
+            current:
+                _currentValue !== undefined
+                    ? _currentValue.toFixed(decimalPlaces)
+                    : '-',
             min: '-',
             mean: '-',
             max: '-',
         };
         const _xs = _sensorData.map((d): any => d[column_name]);
         if (_xs.length > 0) {
-            _stats.min = min(_xs).toFixed(3);
-            _stats.mean = mean(_xs).toFixed(3);
-            _stats.max = max(_xs).toFixed(3);
+            _stats.min = min(_xs).toFixed(decimalPlaces);
+            _stats.mean = mean(_xs).toFixed(decimalPlaces);
+            _stats.max = max(_xs).toFixed(decimalPlaces);
         }
 
         return { [_sensorName]: _stats };
@@ -170,7 +187,7 @@ export default function PlotPanel(props: {
                 <svg
                     className="relative z-0 my-4 no-selection"
                     ref={d3Container}
-                    viewBox={`0 0 400 150`}
+                    viewBox={`0 0 ${CONSTANTS.PLOT.width} ${CONSTANTS.PLOT.height}`}
                 />
             </div>
             <div
@@ -191,8 +208,11 @@ export default function PlotPanel(props: {
                         </TableCell>
                     ))}
                 </TableRow>
-                {sensorNames.map((s, i) => (
-                    <TableRow className="border-b border-slate-300 last:border-0">
+                {take(sensorNames, 12).map((s, i) => (
+                    <TableRow
+                        key={s}
+                        className="border-b border-slate-300 last:border-0"
+                    >
                         <TableCell
                             leader
                             className={
@@ -204,6 +224,7 @@ export default function PlotPanel(props: {
                         </TableCell>
                         {['current', 'min', 'mean', 'max'].map((t) => (
                             <TableCell
+                                key={t}
                                 leader={t === 'current'}
                                 className={
                                     (selectedSensors[s]

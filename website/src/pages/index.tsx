@@ -1,4 +1,4 @@
-import { reduce, uniq } from 'lodash';
+import { defaultTo, difference, max, omit, pick, reduce, uniq } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import DataSelector from '../components/data-selector';
 import PlotPanel from '../components/plot-panel';
@@ -6,7 +6,8 @@ import SensorSelector from '../components/sensor-selector';
 import TimeSelector from '../components/time-selector';
 import backend from '../utilities/backend';
 import { TYPES, CONSTANTS } from '../utilities/constants';
-import transformTimeseries from '../utilities/transform-timeseries';
+import transformTimeseries from '../utilities/utility-functions';
+import ReloadSelector from '../components/reload-selector';
 
 const IndexPage = () => {
     const [dbSchema, setDbSchema] = useState<TYPES.DB_SCHEMA | undefined>(undefined);
@@ -22,8 +23,28 @@ const IndexPage = () => {
     );
 
     const [serverError, setServerError] = useState(false);
+    const [autoReload, setAutoReload] = useState(false);
+    const [isReloading, setIsReloading] = useState(false);
 
-    // TODO: How to deal with non 200 responses from backend?
+    useEffect(() => {
+        if (autoReload) {
+            const intervalSeconds: any = max([
+                defaultTo(
+                    parseInt(
+                        new URLSearchParams(window.location.search).get('interval') ||
+                            ''
+                    ),
+                    5
+                ),
+                5,
+            ]);
+            const interval = setInterval(function () {
+                loadData();
+            }, intervalSeconds * 1000);
+            return () => clearInterval(interval);
+        }
+    }, [autoReload, dbSchema, selectedDb, selectedTable]);
+
     async function loadDatabaseSchema() {
         try {
             setDbSchema(await backend.getSchema());
@@ -32,51 +53,74 @@ const IndexPage = () => {
         }
     }
     async function loadData() {
-        setAllData(undefined);
-        setMaxTime(undefined);
-        setMetaData(undefined);
-        console.log('load data');
+        console.log('loading data');
         if (
             dbSchema !== undefined &&
             selectedDb !== undefined &&
             selectedTable !== undefined
         ) {
+            setIsReloading(true);
             try {
                 const _rawData = await backend.getData(selectedDb, selectedTable);
+                const _metaData = await backend.getMetaData(selectedDb, selectedTable);
                 const { newMaxTime, newData } = transformTimeseries.mergeTimeColumns(
                     _rawData,
                     dbSchema[selectedDb][selectedTable]
                 );
                 setAllData(newData);
                 setMaxTime(newMaxTime);
-                setMetaData(await backend.getMetaData(selectedDb, selectedTable));
+                setMetaData(_metaData);
+                setIsReloading(false);
             } catch {
                 setServerError(true);
+                setIsReloading(false);
             }
         }
     }
 
     useEffect(() => {
         if (allData === undefined) {
-            setSelectedSensors({});
+            if (Object.keys(setSelectedSensors).length !== 0) {
+                setSelectedSensors({});
+            }
         } else {
-            setSelectedSensors(
-                reduce(
+            const uniqueSensors = uniq(allData.map((d) => d['sensor']));
+            const newSensorsExist =
+                difference(uniqueSensors, Object.keys(selectedSensors)).length > 0;
+
+            if (newSensorsExist) {
+                const freshSelectedSensors = reduce(
                     uniq(allData.map((d) => d['sensor'])),
-                    (prev, curr, index) => ({ ...prev, [curr]: true }),
+                    (prev, curr, index) => ({ ...prev, [curr]: selectedSensors }),
                     {}
-                )
-            );
+                );
+                const currentSelectedSensors = pick(
+                    JSON.parse(JSON.stringify(selectedSensors)),
+                    uniqueSensors
+                );
+
+                if (uniqueSensors.length > 12) {
+                    alert('Too many sensors, only plotting the first 12');
+                }
+                setSelectedSensors({
+                    ...freshSelectedSensors,
+                    ...currentSelectedSensors,
+                });
+            }
         }
-    }, [allData]);
+    }, [allData, selectedSensors]);
 
     useEffect(() => {
         loadDatabaseSchema();
     }, []);
 
     useEffect(() => {
+        setAutoReload(false);
+        setAllData(undefined);
+        setMaxTime(undefined);
+        setMetaData(undefined);
         loadData();
-    }, [selectedTable]);
+    }, [dbSchema, selectedDb, selectedTable]);
 
     useEffect(() => {
         setSelectedTable(undefined);
@@ -114,7 +158,7 @@ const IndexPage = () => {
         <div className="w-full min-h-screen px-4 py-20 flex-col-center-top bg-slate-150">
             <main
                 className={
-                    'hidden md:flex flex-col items-center w-full max-w-5xl gap-y-6 ' +
+                    'hidden md:flex flex-col w-full items-start max-w-5xl gap-y-6 ' +
                     selectedSensorCSS +
                     selectedTimeCSS
                 }
@@ -138,17 +182,27 @@ const IndexPage = () => {
                         )}
                         {dbSchema !== undefined && (
                             <>
-                                <DataSelector
-                                    {...{
-                                        dbSchema,
-                                        selectedDb,
-                                        setSelectedDb,
-                                        selectedTable,
-                                        setSelectedTable,
-                                        triggerRefresh: loadData,
-                                        maxTime,
-                                    }}
-                                />
+                                <div className="flex flex-row items-end w-full">
+                                    <DataSelector
+                                        {...{
+                                            dbSchema,
+                                            selectedDb,
+                                            setSelectedDb,
+                                            selectedTable,
+                                            setSelectedTable,
+                                            isReloading,
+                                        }}
+                                    />
+                                    <div className="flex-grow" />
+                                    {stateIsComplete && (
+                                        <TimeSelector
+                                            {...{
+                                                selectedTime,
+                                                setSelectedTime,
+                                            }}
+                                        />
+                                    )}
+                                </div>
                                 {selectedDb !== undefined &&
                                     selectedTable !== undefined &&
                                     !stateIsComplete && (
@@ -169,18 +223,25 @@ const IndexPage = () => {
                                         {allData.length > 0 && (
                                             <>
                                                 <div className="w-full h-px bg-slate-300" />
-                                                <SensorSelector
-                                                    {...{
-                                                        selectedSensors,
-                                                        setSelectedSensors,
-                                                    }}
-                                                />
-                                                <TimeSelector
-                                                    {...{
-                                                        selectedTime,
-                                                        setSelectedTime,
-                                                    }}
-                                                />
+                                                <div className="flex flex-row items-start w-full">
+                                                    <SensorSelector
+                                                        {...{
+                                                            selectedSensors,
+                                                            setSelectedSensors,
+                                                        }}
+                                                    />
+                                                    <div className="flex-grow min-w-[1.5rem]" />
+                                                    <ReloadSelector
+                                                        {...{
+                                                            maxTime,
+                                                            autoReload,
+                                                            setAutoReload,
+                                                            triggerManualReload:
+                                                                loadData,
+                                                            isReloading,
+                                                        }}
+                                                    />
+                                                </div>
                                                 <div className="w-full h-px bg-slate-300" />
                                                 {dbSchema[selectedDb][
                                                     selectedTable
@@ -212,3 +273,19 @@ const IndexPage = () => {
 };
 
 export default IndexPage;
+
+/*
+
+<div className="flex-grow" />
+            {props.maxTime !== undefined && (
+                <>
+                    <div className="text-sm h-7 text-slate-900">
+                        <span className="opacity-60">Newest data:</span>{' '}
+                        {props.maxTime.date},{' '}
+                        {transformTimeseries.renderTimeLabel(props.maxTime.hour)} (UTC)
+                    </div>
+                    <_RefreshButton onClick={props.triggerRefresh} />
+                </>
+            )}
+            
+            */

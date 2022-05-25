@@ -11,7 +11,13 @@ export namespace TYPES {
     export type DATA = { [key: string]: string | number }[];
 
     export type META_DATA = {
-        [key: string]: { unit: string | null; description: string | null };
+        [key: string]: {
+            unit: string | null;
+            description: string | null;
+            minimum: number | null;
+            decimal_places: number | null;
+            detection_limit: number | null;
+        };
     };
 
     export type SELECTED_SENSORS = { [key: string]: boolean };
@@ -24,10 +30,16 @@ export const CONSTANTS: {
     HEX_COLORS: string[];
     TEXT_COLORS: string[];
     TEXT_COLORS_LIGHT: string[];
-    FOCUS_COLORS: string[];
+    BG_COLORS: string[];
     SVG_HEIGHT: number;
-    PLOT_Y_MIN: number;
-    PLOT_Y_MAX: number;
+    PLOT: {
+        xMin: number;
+        xMax: number;
+        yMin: number;
+        yMax: number;
+        width: number;
+        height: number;
+    };
     TIMES: TYPES.TimeBucket[];
     HOUR_FRACTIONS: { [key in TYPES.TimeBucket]: number };
     CIRCLE_RADII: { [key in TYPES.TimeBucket]: number };
@@ -75,23 +87,29 @@ export const CONSTANTS: {
         'text-yellow-300',
         'text-red-300',
     ],
-    FOCUS_COLORS: [
-        'focus:ring-rose-500',
-        'focus:ring-purple-500',
-        'focus:ring-blue-500',
-        'focus:ring-teal-500',
-        'focus:ring-lime-500',
-        'focus:ring-orange-500',
-        'focus:ring-pink-500',
-        'focus:ring-violet-500',
-        'focus:ring-sky-500',
-        'focus:ring-emerald-500',
-        'focus:ring-yellow-500',
-        'focus:ring-red-500',
+    BG_COLORS: [
+        'bg-rose-500',
+        'bg-purple-500',
+        'bg-blue-500',
+        'bg-teal-500',
+        'bg-lime-500',
+        'bg-orange-500',
+        'bg-pink-500',
+        'bg-violet-500',
+        'bg-sky-500',
+        'bg-emerald-500',
+        'bg-yellow-500',
+        'bg-red-500',
     ],
     SVG_HEIGHT: 150,
-    PLOT_Y_MIN: 5,
-    PLOT_Y_MAX: 130,
+    PLOT: {
+        xMin: 40,
+        xMax: 380,
+        yMin: 5,
+        yMax: 130,
+        width: 400,
+        height: 150,
+    },
     TIMES: ['10 minutes', '30 minutes', '2 hours', '6 hours', '24 hours'],
     HOUR_FRACTIONS: {
         '10 minutes': 0.1666666,

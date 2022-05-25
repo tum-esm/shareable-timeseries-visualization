@@ -1,8 +1,9 @@
 .DS_Store
 
-*/.venv
-*/**/*.pyc
-*/**/__pycache__
-*/config.json
+**/.venv
+**/*.pyc
+**/__pycache__
+**/config.json
+**/.env
 
 website/node_modules

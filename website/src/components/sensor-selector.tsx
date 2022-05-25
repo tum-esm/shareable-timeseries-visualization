@@ -1,3 +1,4 @@
+import { take } from 'lodash';
 import React from 'react';
 import { CONSTANTS } from '../utilities/constants';
 
@@ -8,35 +9,29 @@ function _Checkbox(props: {
     sensorIndex: number;
 }) {
     return (
-        <div className="relative flex items-start">
-            <div className="flex items-center h-5">
-                <input
-                    id={`sensor-checkbox-${props.sensorIndex}`}
-                    aria-describedby="candidates-description"
-                    name="candidates"
-                    type="checkbox"
-                    className={
-                        'w-4 h-4 border-slate-300 rounded ' +
-                        CONSTANTS.TEXT_COLORS[props.sensorIndex] +
-                        ' ' +
-                        CONSTANTS.FOCUS_COLORS[props.sensorIndex]
-                    }
-                    checked={props.value}
-                    onChange={() => props.setValue(!props.value)}
-                />
+        <button
+            className={
+                'relative flex-row-center px-3 py-1 first:rounded-l-md last:rounded-r-md ' +
+                ' border border-slate-300 -ml-px first:ml-0 shadow-sm ' +
+                (props.value ? 'bg-white ' : 'bg-slate-100 opacity-60 ')
+            }
+            onClick={() => props.setValue(!props.value)}
+        >
+            <div
+                className={
+                    'h-2.5 w-2.5 rounded-sm flex-shrink-0 ' +
+                    CONSTANTS.BG_COLORS[props.sensorIndex]
+                }
+            />
+            <div
+                className={
+                    'ml-1.5 text-sm font-medium ' +
+                    CONSTANTS.TEXT_COLORS[props.sensorIndex]
+                }
+            >
+                {props.label}
             </div>
-            <div className="ml-1.5 text-sm">
-                <label
-                    htmlFor={`sensor-checkbox-${props.sensorIndex}`}
-                    className={
-                        'font-medium text-slate-700 ' +
-                        CONSTANTS.TEXT_COLORS[props.sensorIndex]
-                    }
-                >
-                    {props.label}
-                </label>
-            </div>
-        </div>
+        </button>
     );
 }
 
@@ -45,9 +40,8 @@ const SensorSelector = (props: {
     setSelectedSensors(s: { [key: string]: boolean }): void;
 }) => {
     return (
-        <div className="flex-wrap w-full flex-row-left gap-x-4 gap-y-1">
-            <span className="-mr-2">Plot data from stations:</span>
-            {Object.keys(props.selectedSensors)
+        <div className={'flex-row-left flex-wrap gap-y-1 '}>
+            {take(Object.keys(props.selectedSensors).sort(), 12)
                 .sort()
                 .map((k, i) => (
                     <_Checkbox
