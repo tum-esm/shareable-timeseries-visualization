@@ -43,7 +43,6 @@ export default function PlotPanel(props: {
 }) {
     const { column_name, data, metaData, selectedSensors, maxTime, selectedTime } =
         props;
-    console.log({ props });
     const [descriptionIsVisible, setDescriptionIsVisible] = useState(false);
 
     const d3Container = useRef(null);
@@ -210,7 +209,10 @@ export default function PlotPanel(props: {
                     ))}
                 </TableRow>
                 {take(sensorNames, 12).map((s, i) => (
-                    <TableRow className="border-b border-slate-300 last:border-0">
+                    <TableRow
+                        key={s}
+                        className="border-b border-slate-300 last:border-0"
+                    >
                         <TableCell
                             leader
                             className={
@@ -222,6 +224,7 @@ export default function PlotPanel(props: {
                         </TableCell>
                         {['current', 'min', 'mean', 'max'].map((t) => (
                             <TableCell
+                                key={t}
                                 leader={t === 'current'}
                                 className={
                                     (selectedSensors[s]

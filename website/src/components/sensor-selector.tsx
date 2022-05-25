@@ -1,3 +1,4 @@
+import { take } from 'lodash';
 import React from 'react';
 import { CONSTANTS } from '../utilities/constants';
 
@@ -40,7 +41,7 @@ const SensorSelector = (props: {
 }) => {
     return (
         <div className={'flex-row-left flex-wrap gap-y-1 '}>
-            {Object.keys(props.selectedSensors)
+            {take(Object.keys(props.selectedSensors).sort(), 12)
                 .sort()
                 .map((k, i) => (
                     <_Checkbox

@@ -17,12 +17,13 @@ function _Select(props: {
                 name="location"
                 className="block w-full py-2 pl-3 pr-10 mt-1 text-base rounded-md shadow-sm border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 value={selectedValue}
-                onChange={(e: any) =>
+                onChange={
                     props.disabled
-                        ? {}
-                        : setSelectedValue(
-                              e.target.value !== '-' ? e.target.value : undefined
-                          )
+                        ? (e: any) => {}
+                        : (e: any) =>
+                              setSelectedValue(
+                                  e.target.value !== '-' ? e.target.value : undefined
+                              )
                 }
                 disabled={props.disabled}
             >

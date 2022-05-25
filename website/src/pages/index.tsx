@@ -1,4 +1,4 @@
-import { reduce, uniq } from 'lodash';
+import { defaultTo, difference, max, omit, pick, reduce, uniq } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import DataSelector from '../components/data-selector';
 import PlotPanel from '../components/plot-panel';
@@ -28,9 +28,19 @@ const IndexPage = () => {
 
     useEffect(() => {
         if (autoReload) {
+            const intervalSeconds: any = max([
+                defaultTo(
+                    parseInt(
+                        new URLSearchParams(window.location.search).get('interval') ||
+                            ''
+                    ),
+                    5
+                ),
+                5,
+            ]);
             const interval = setInterval(function () {
                 loadData();
-            }, 3000);
+            }, intervalSeconds * 1000);
             return () => clearInterval(interval);
         }
     }, [autoReload, dbSchema, selectedDb, selectedTable]);
@@ -70,22 +80,35 @@ const IndexPage = () => {
 
     useEffect(() => {
         if (allData === undefined) {
-            setSelectedSensors({});
+            if (Object.keys(setSelectedSensors).length !== 0) {
+                setSelectedSensors({});
+            }
         } else {
-            const uniqueSensorNames = uniq(allData.map((d) => d['sensor']));
+            const uniqueSensors = uniq(allData.map((d) => d['sensor']));
+            const newSensorsExist =
+                difference(uniqueSensors, Object.keys(selectedSensors)).length > 0;
 
-            setSelectedSensors(
-                reduce(
-                    uniqueSensorNames,
-                    (prev, curr, index) => ({ ...prev, [curr]: true }),
+            if (newSensorsExist) {
+                const freshSelectedSensors = reduce(
+                    uniq(allData.map((d) => d['sensor'])),
+                    (prev, curr, index) => ({ ...prev, [curr]: selectedSensors }),
                     {}
-                )
-            );
-            if (uniqueSensorNames.length > 12) {
-                alert('Too many sensor, only plotting the first 12.');
+                );
+                const currentSelectedSensors = pick(
+                    JSON.parse(JSON.stringify(selectedSensors)),
+                    uniqueSensors
+                );
+
+                if (uniqueSensors.length > 12) {
+                    alert('Too many sensors, only plotting the first 12');
+                }
+                setSelectedSensors({
+                    ...freshSelectedSensors,
+                    ...currentSelectedSensors,
+                });
             }
         }
-    }, [allData]);
+    }, [allData, selectedSensors]);
 
     useEffect(() => {
         loadDatabaseSchema();
@@ -207,7 +230,7 @@ const IndexPage = () => {
                                                             setSelectedSensors,
                                                         }}
                                                     />
-                                                    <div className="flex-grow" />
+                                                    <div className="flex-grow min-w-[1.5rem]" />
                                                     <ReloadSelector
                                                         {...{
                                                             maxTime,

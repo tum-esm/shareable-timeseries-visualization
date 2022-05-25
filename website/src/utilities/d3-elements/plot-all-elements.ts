@@ -21,7 +21,6 @@ function plotAllElements(
     }
 ) {
     const sensorNames: any[] = uniq(data.map((d) => d['sensor'])).sort();
-    console.log({ column_name, options });
 
     const _allData = data.filter((d) => d[column_name] !== null);
 
