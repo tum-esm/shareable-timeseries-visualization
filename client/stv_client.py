@@ -53,14 +53,7 @@ META_DATA_SCHEMA = lambda data_columns: {
         "require_all": True,
         "schema": {c: {"type": "number", "nullable": True} for c in data_columns},
     },
-    "detection_limits": {
-        "type": "dict",
-        "require_all": True,
-        "schema": {
-            c: {"type": "number", "nullable": True, "min": 0} for c in data_columns
-        },
-    },
-    "decimal_placess": {
+    "decimal_places": {
         "type": "dict",
         "require_all": True,
         "schema": {
@@ -121,8 +114,7 @@ class STVClient:
         units: dict[str, str] = {},
         descriptions: dict[str, str] = {},
         minimums: dict[str, float] = {},
-        detection_limits: dict[str, float] = {},
-        decimal_placess: dict[str, int] = {},
+        decimal_places: dict[str, int] = {},
         print_stuff: bool = False,
     ):
         try:
@@ -144,8 +136,7 @@ class STVClient:
             "units": units,
             "descriptions": descriptions,
             "minimums": minimums,
-            "detection_limits": detection_limits,
-            "decimal_placess": decimal_placess,
+            "decimal_places": decimal_places,
         }
         for m in self.meta_data.keys():
             self.meta_data[m] = include_none_keys(self.meta_data[m], self.data_columns)
@@ -219,13 +210,13 @@ class STVClient:
         for column_name in self.data_columns:
             sql_statement = (
                 f"INSERT INTO column_meta_data "
-                + f"(table_name, column_name, unit, description, minimum, detection_limit, decimal_places) "
-                + " VALUES (%s, %s, %s, %s, %s, %s, %s)"
+                + f"(table_name, column_name, unit, description, minimum, decimal_places) "
+                + " VALUES (%s, %s, %s, %s, %s, %s)"
             )
             print("sql_statement:", sql_statement)
             cursor.execute(
                 sql_statement,
-                (self.table_name, column_name, None, None, None, None, None),
+                (self.table_name, column_name, None, None, None, None),
             )
 
         self.connection.commit()
