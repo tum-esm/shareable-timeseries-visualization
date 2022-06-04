@@ -38,7 +38,7 @@ del client
 
 **4.** View and share the plots on [https://tueiesm-stv-api.netlify.app/](https://tueiesm-stv-api.netlify.app/)
 
-<img width="1072" src="https://user-images.githubusercontent.com/29046316/169709670-1be64cc1-0823-49d1-917f-07f88204a1d3.png">
+![](/docs/website-demo.png)
 
 **5.** Properly embed the client into your codebase using [Git Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules). An example can be found here: https://github.com/tum-esm/airquality_station/tree/WebUI-extended. `/no-gui.py` makes use of the stv-client.
 
