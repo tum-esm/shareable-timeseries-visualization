@@ -79,3 +79,9 @@ The python-client uses a MySQL user, that has all privileges on all tables in th
 The backend uses a MySQL user, that is allowed to read anything from all databases associated with this project.
 
 When fetching data or meta-data, we don't have to look out for SQL injections since the backend only has read permissions on the public tables anyways - no other permissions that could be exploited.
+
+<br/>
+
+## 💾 Setting up your own MySQL instance
+
+`/backend/README.md` includes: 1. Example responses from the backend, 2. Commands how to set up the MySQL instance.
