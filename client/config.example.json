@@ -1,4 +1,5 @@
 {
+    "mysql_url": "...",
     "mysql_user": "...",
     "mysql_password": "..."
 }

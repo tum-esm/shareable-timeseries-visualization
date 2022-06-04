@@ -120,10 +120,12 @@ class STVClient:
         try:
             with open(os.path.join(PROJECT_DIR, "config.json")) as f:
                 CONFIG = json.load(f)
-                SQL_USER = CONFIG["mysql_user"]
-                SQL_PASSWORD = CONFIG["mysql_password"]
-                assert isinstance(SQL_USER, str)
-                assert isinstance(SQL_PASSWORD, str)
+                MYSQL_URL = CONFIG["mysql_url"]
+                MYSQL_USER = CONFIG["mysql_user"]
+                MYSQL_PASSWORD = CONFIG["mysql_password"]
+                assert isinstance(MYSQL_URL, str)
+                assert isinstance(MYSQL_USER, str)
+                assert isinstance(MYSQL_PASSWORD, str)
         except (AssertionError, KeyError) as e:
             raise Exception(f"Unable to load config.json: {e}")
 
@@ -145,10 +147,10 @@ class STVClient:
         self.print_stuff = print_stuff
 
         self.connection: mysql.connector.MySQLConnection = mysql.connector.connect(
-            host="esm-mysql-public-do-user-7320955-0.b.db.ondigitalocean.com",
+            host=MYSQL_URL,
             port=25060,
-            user=SQL_USER,
-            password=SQL_PASSWORD,
+            user=MYSQL_USER,
+            password=MYSQL_PASSWORD,
             database=database_name,
         )
         if not self.__table_exists():

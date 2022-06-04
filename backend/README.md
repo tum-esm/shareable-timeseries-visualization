@@ -83,9 +83,9 @@ Serving three routes: **`/schema`**, **`/data`** and **`/meta-data`**
 1. Create a new database for measurement data
 
 ```sql
-CREATE DATABASE airquality_course;
+CREATE DATABASE stv_airquality_course;
 
-CREATE TABLE airquality_course.column_meta_data (
+CREATE TABLE stv_airquality_course.column_meta_data (
     table_name varchar(64) not null,
     column_name varchar(64) not null,
     unit varchar(64) null,
@@ -97,20 +97,22 @@ CREATE TABLE airquality_course.column_meta_data (
 );
 ```
 
+**IMPORTANT:** All databases in the MySQL instance associated with the stv-project have to be prefixed with `stv_`.
+
 2. Set up a new user for that database
 
 ```sql
 -- create mysql user
-CREATE USER 'airquality_course_students'@'%'
+CREATE USER 'stv_airquality_course_students'@'%'
 IDENTIFIED WITH 'caching_sha2_password'
-BY 'choose-a-good-password';
+BY 'choose-a-good-password-other-than-this-one';
 
 -- let this user only edit the respective database
-REVOKE ALL PRIVILEGES ON *.* FROM 'airquality_course_students'@'%';
-GRANT ALL PRIVILEGES ON airquality_course.* TO 'airquality_course_students'@'%';
+REVOKE ALL PRIVILEGES ON *.* FROM 'stv_airquality_course_students'@'%';
+GRANT ALL PRIVILEGES ON airquality_course.* TO 'stv_airquality_course_students'@'%';
 
 -- optional
-SHOW GRANTS FOR 'airquality_course_students'@'%';
+SHOW GRANTS FOR 'stv_airquality_course_students'@'%';
 ```
 
-3. Now, the user `airquality_course_students` can use the client with any table name inside the database `airquality_course`
+3. Now, the user `stv_airquality_course_students` can use the client with any table name inside the database `stv_airquality_course`

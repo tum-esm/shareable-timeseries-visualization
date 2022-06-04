@@ -15,9 +15,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+MYSQL_URL = os.environ.get("MYSQL_URL")
+MYSQL_USER = os.environ.get("MYSQL_USER")
+MYSQL_PASSWORD = os.environ.get("MYSQL_PASSWORD")
+MYSQL_PORT = 25060
+assert isinstance(MYSQL_URL, str)
+assert isinstance(MYSQL_USER, str)
+assert isinstance(MYSQL_PASSWORD, str)
+
 db = databases.Database(
-    f"mysql://{os.environ.get('MYSQL_USER')}:{os.environ.get('MYSQL_PASSWORD')}"
-    + "@esm-mysql-public-do-user-7320955-0.b.db.ondigitalocean.com:25060?ssl-mode=REQUIRED",
+    f"mysql://{MYSQL_URL}:{MYSQL_PASSWORD}@{MYSQL_URL}:{MYSQL_PORT}?ssl-mode=REQUIRED",
     echo=True,
 )
 
