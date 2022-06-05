@@ -23,13 +23,31 @@ assert isinstance(MYSQL_URL, str)
 assert isinstance(MYSQL_USER, str)
 assert isinstance(MYSQL_PASSWORD, str)
 
-db = databases.Database(
-    f"mysql://{MYSQL_URL}:{MYSQL_PASSWORD}@{MYSQL_URL}:{MYSQL_PORT}?ssl-mode=REQUIRED",
-    echo=True,
+CONNECTION_STRING = (
+    f"mysql://{MYSQL_USER}:{MYSQL_PASSWORD}@"
+    + f"{MYSQL_URL}:{MYSQL_PORT}?ssl-mode=REQUIRED"
 )
+db = databases.Database(CONNECTION_STRING, echo=True)
+
+EXPECTED_META_COLUMNS = [
+    ["column_name", "varchar", "NO", "PRI"],
+    ["decimal_places", "int", "YES", ""],
+    ["description", "varchar", "YES", ""],
+    ["minimum", "float", "YES", ""],
+    ["table_name", "varchar", "NO", "PRI"],
+    ["unit", "varchar", "YES", ""],
+]
+
+EXPECTED_DATA_COLUMNS = [
+    ["ID", "int", "NO", "PRI"],
+    ["date", "int", "NO", ""],
+    ["hour", "float", "NO", ""],
+    ["sensor", "varchar", "NO", ""],
+]
 
 
 async def run_sql_query(query):
+    # TODO: Return 404 if database is offline
     try:
         return await db.fetch_all(query)
     except Exception as e:
@@ -68,6 +86,14 @@ def enforce_date_on_datapoint(date: int, datapoint: tuple):
     return new_datapoint
 
 
+def unique(xs: list):
+    new_xs = []
+    for x in xs:
+        if x not in new_xs:
+            new_xs.append(x)
+    return new_xs
+
+
 @app.on_event("startup")
 async def startup():
     await db.connect()
@@ -80,71 +106,110 @@ async def shutdown():
 
 @app.get("/schema")
 async def get_schema():
-    result_rows = await run_sql_query(
-        "SELECT table_schema, table_name, column_name, data_type, is_nullable, ORDINAL_POSITION "
-        + "FROM information_schema.columns WHERE "
-        + "    (table_schema != 'information_schema' AND table_name != 'column_meta_data') AND "
-        + "    ( "
-        + "        (column_name = 'ID' AND column_key = 'PRI' AND extra = 'auto_increment') "
-        + "        OR "
-        + "        (column_name != 'ID' AND column_key = '' AND extra = '') "
-        + "    ) ORDER BY ORDINAL_POSITION;",
+    all_schema_rows = await run_sql_query(
+        "SELECT table_schema, table_name, column_name, data_type, is_nullable, column_key "
+        + "FROM information_schema.columns WHERE table_schema LIKE 'stv_%' "
+        + "ORDER BY ordinal_position;",
     )
-    schema = {}
-    for (
-        database_name,
-        table_name,
-        column_name,
-        column_type,
-        is_nullable,
-        position,
-    ) in result_rows:
-        if database_name not in schema.keys():
-            schema[database_name] = {}
-        if table_name not in schema[database_name].keys():
-            schema[database_name][table_name] = []
-        schema[database_name][table_name].append(
-            (column_name, column_type, is_nullable == "YES")
-        )
+    schema: dict[str, dict[str, list[str]]] = {}
+    messages = []
 
-    clean_schema = {}
-
-    for database_name in schema.keys():
-        for table_name in schema[database_name].keys():
-            try:
-                columns = schema[database_name][table_name]
-                assert len(columns) > 4
-
-                def get_column_by_name(column_name):
-                    result = list(
+    # 1. Gather all database names where the
+    #    database has a valid meta data table
+    database_names = unique(list(map(lambda r: r[0], all_schema_rows)))
+    for database_name in database_names:
+        try:
+            meta_table_schema_rows = list(
+                sorted(
+                    list(
                         filter(
-                            lambda c: c[0] == column_name,
-                            columns,
+                            lambda r: r[0] == database_name
+                            and r[1] == "column_meta_data",
+                            all_schema_rows,
                         )
-                    )
-                    return None if (len(result) == 0) else result[0]
+                    ),
+                    key=lambda r: r[2],
+                )
+            )
 
-                assert get_column_by_name("ID") == ("ID", "int", False)
-                assert get_column_by_name("date") == ("date", "int", False)
-                assert get_column_by_name("hour") == ("hour", "float", False)
-                assert get_column_by_name("sensor") == ("sensor", "varchar", False)
+            assert len(meta_table_schema_rows) == len(
+                EXPECTED_META_COLUMNS
+            ), "too many meta columns"
+            for column_index in range(len(EXPECTED_META_COLUMNS)):
+                for property_index in range(len((EXPECTED_META_COLUMNS[column_index]))):
+                    a = meta_table_schema_rows[column_index][property_index + 2]
+                    b = EXPECTED_META_COLUMNS[column_index][property_index]
+                    assert (
+                        a == b
+                    ), f"meta column {column_index} propetry {property_index} invalid ({a}, {b})"
 
-                data_columns = list(
+            # now we can assume the meta data table to be valid for this database
+            schema[database_name] = {}
+
+        except AssertionError as e:
+            messages.append(f"Invalid database '{database_name}': {e}")
+            continue
+
+    # 2. For all valid databases gather all tables
+    #    (and columns names) in a valid format
+    for database_name in schema.keys():
+        table_names = unique(
+            [
+                r[1]
+                for r in all_schema_rows
+                if (r[0] == database_name and r[1] != "column_meta_data")
+            ]
+        )
+        for table_name in table_names:
+            column_names = []
+            try:
+                data_table_schema_rows = list(
                     filter(
-                        lambda c: c[0] not in ["ID", "date", "hour", "sensor"],
-                        columns,
+                        lambda r: r[0] == database_name and r[1] == table_name,
+                        all_schema_rows,
                     )
                 )
-                assert all([c[1] == "float" for c in data_columns])
 
-                # assert all([c[2] for c in data_columns])
-                if database_name not in clean_schema.keys():
-                    clean_schema[database_name] = {}
-                clean_schema[database_name][table_name] = [c[0] for c in data_columns]
-            except (AssertionError, KeyError) as e:
-                pass
+                # check the required columns (ID, date, hour, sensor)
+                for i in range(len(EXPECTED_DATA_COLUMNS)):
+                    for j in range(len(EXPECTED_DATA_COLUMNS[i])):
+                        column_name = EXPECTED_DATA_COLUMNS[i][0]
+                        assert (
+                            data_table_schema_rows[i][2 + j]
+                            == EXPECTED_DATA_COLUMNS[i][j]
+                        ), f"column '{column_name}' is invalid "
 
-    return clean_schema
+                # at least one data column
+                assert len(data_table_schema_rows) > len(
+                    EXPECTED_DATA_COLUMNS
+                ), "no data columns"
+
+                # check the data columns (all nullable floats, no primary keys)
+                for i in range(len(EXPECTED_DATA_COLUMNS), len(data_table_schema_rows)):
+                    for index, label, expected_value in [
+                        (3, "data_type", "float"),
+                        (4, "is_nullable", "YES"),
+                        (5, "column_key", ""),
+                    ]:
+                        column_name = data_table_schema_rows[i][2]
+                        actual_value = data_table_schema_rows[i][index]
+                        assert actual_value == expected_value, (
+                            f"column '{column_name}' is invalid ({label}: "
+                            + f"'{actual_value}' is not '{expected_value}'"
+                        )
+                    column_names.append(column_name)
+
+            except AssertionError as e:
+                messages.append(f"Invalid table '{database_name}'.'{table_name}': {e}")
+                continue
+
+            schema[database_name][table_name] = column_names
+
+    # 3. Remove all databases without a valid table and
+    #    rename databases from "stv_xxx" to "xxx"
+    clean_schema = {k[4:]: v for k, v in schema.items() if len(v.keys()) > 0}
+
+    return {"schema": clean_schema, "messages": messages}
 
 
 @app.get("/data")
@@ -152,7 +217,7 @@ async def get_data(database: str = None, table: str = None):
     validate_query_params(database, table)
 
     result_rows_1 = await run_sql_query(
-        f"SELECT date, hour FROM {database}.{table} "
+        f"SELECT date, hour FROM stv_{database}.{table} "
         + "ORDER BY date DESC, hour DESC LIMIT 1"
     )
 
@@ -165,7 +230,7 @@ async def get_data(database: str = None, table: str = None):
         datetime.strptime(str(newest_date), "%Y%m%d") - timedelta(days=1), "%Y%m%d"
     )
     result_rows_2 = await run_sql_query(
-        f"SELECT * FROM {database}.{table} WHERE ("
+        f"SELECT * FROM stv_{database}.{table} WHERE ("
         + f"  (date = {newest_date}) OR "
         + f"  ((date = {oldest_date}) AND (hour >= {newest_hour}))"
         + ") ORDER BY date DESC, hour DESC"
@@ -179,7 +244,7 @@ async def get_meta_data(database: str = None, table: str = None):
 
     result_rows = await run_sql_query(
         "SELECT column_name, unit, description, minimum, detection_limit, decimal_places "
-        + f"FROM {database}.column_meta_data WHERE "
+        + f"FROM stv_{database}.column_meta_data WHERE "
         + f"table_name='{table}'"
     )
 

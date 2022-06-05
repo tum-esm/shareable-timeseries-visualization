@@ -22,7 +22,7 @@ client = STVClient(
     units={"ch4": "ppb", "co2": "ppm"},
     descriptions={"ch4": "The cows are at fault, for sure"},
     minimums={"ch4": 0, "co2": 0},
-    decimal_placess={"ch4": 3, "co2": 1},
+    decimal_places={"ch4": 3, "co2": 1},
     print_stuff=True,
 )
 
@@ -36,7 +36,7 @@ print("latest 10 records: ", client.get_latest_n_records(10))
 del client
 ```
 
-**4.** View and share the plots on [https://tueiesm-stv-api.netlify.app/](https://tueiesm-stv-api.netlify.app/)
+**4.** View and share the plots on the website (our instance: https://tueiesm-stv-api.netlify.app/)
 
 ![](/docs/website-demo.png)
 

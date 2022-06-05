@@ -107,12 +107,23 @@ CREATE USER 'stv_airquality_course_students'@'%'
 IDENTIFIED WITH 'caching_sha2_password'
 BY 'choose-a-good-password-other-than-this-one';
 
--- let this user only edit the respective database
-REVOKE ALL PRIVILEGES ON *.* FROM 'stv_airquality_course_students'@'%';
-GRANT ALL PRIVILEGES ON airquality_course.* TO 'stv_airquality_course_students'@'%';
+-- let the client user only edit the respective database
+GRANT ALL PRIVILEGES ON stv_airquality_course.* TO 'stv_airquality_course_students'@'%';
 
 -- optional
 SHOW GRANTS FOR 'stv_airquality_course_students'@'%';
 ```
 
 3. Now, the user `stv_airquality_course_students` can use the client with any table name inside the database `stv_airquality_course`
+
+4. Additionally, you will need a public user for the backend
+
+```sql
+-- create mysql user
+CREATE USER 'stv_public'@'%'
+IDENTIFIED WITH 'caching_sha2_password'
+BY 'choose-a-good-password-other-than-this-one';
+
+-- let the client user only edit the respective database
+GRANT SELECT ON stv_airquality_course.* TO 'stv_public'@'%';
+```
