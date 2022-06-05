@@ -252,7 +252,7 @@ async def get_meta_data(database: str = None, table: str = None):
     validate_query_params(database, table)
 
     result_rows = await run_sql_query(
-        "SELECT column_name, unit, description, minimum, detection_limit, decimal_places "
+        "SELECT column_name, unit, description, minimum, decimal_places "
         + f"FROM stv_{database}.column_meta_data WHERE "
         + f"table_name='{table}'"
     )
@@ -265,7 +265,6 @@ async def get_meta_data(database: str = None, table: str = None):
             "unit": row[1],
             "description": row[2],
             "minimum": row[3],
-            "detection_limit": row[4],
-            "decimal_places": row[5],
+            "decimal_places": row[4],
         }
     return meta_data

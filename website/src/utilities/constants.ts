@@ -26,7 +26,6 @@ export namespace TYPES {
 }
 
 export const CONSTANTS: {
-    API: string;
     HEX_COLORS: string[];
     TEXT_COLORS: string[];
     TEXT_COLORS_LIGHT: string[];
@@ -44,7 +43,6 @@ export const CONSTANTS: {
     HOUR_FRACTIONS: { [key in TYPES.TimeBucket]: number };
     CIRCLE_RADII: { [key in TYPES.TimeBucket]: number };
 } = {
-    API: 'https://stv-backend-iwtvwmhnyq-ew.a.run.app',
     HEX_COLORS: [
         '#f43f5e',
         '#a855f7',

@@ -8,7 +8,19 @@ import backend from '../utilities/backend';
 import { TYPES, CONSTANTS } from '../utilities/constants';
 import transformTimeseries from '../utilities/utility-functions';
 import ReloadSelector from '../components/reload-selector';
+import icons from '../assets/icons';
 
+// TODO: Add "built at TUM" to footer with link to https://www.ee.cit.tum.de/esm"
+
+const TUMLink = (props: { href: string; children: string }) => (
+    <a
+        className="leading-tight hover:text-rose-600 hover:underline"
+        href={props.href}
+        target="_blank"
+    >
+        {props.children}
+    </a>
+);
 const IndexPage = () => {
     const [dbSchema, setDbSchema] = useState<TYPES.DB_SCHEMA | undefined>(undefined);
     const [allData, setAllData] = useState<TYPES.DATA | undefined>(undefined);
@@ -158,11 +170,32 @@ const IndexPage = () => {
         <div className="w-full min-h-screen px-4 py-20 flex-col-center-top bg-slate-150">
             <main
                 className={
-                    'hidden md:flex flex-col w-full items-start max-w-5xl gap-y-6 ' +
+                    'hidden md:flex flex-col w-full items-center max-w-5xl gap-y-6 ' +
                     selectedSensorCSS +
                     selectedTimeCSS
                 }
             >
+                <div className="w-full font-normal flex-row-left">
+                    <a className="w-16 mr-3" href="https://www.tum.de/" target="_blank">
+                        {icons.tum}
+                    </a>
+                    <div className="text-xs flex-col-left text-[#3070B3]">
+                        <TUMLink href="https://www.ee.cit.tum.de/esm/startseite/">
+                            Professur für Umweltsensorik und Modellierung
+                        </TUMLink>
+                        <TUMLink href="https://www.cit.tum.de/">
+                            TUM School of Computation, Information and Technology
+                        </TUMLink>
+                        <TUMLink href="https://www.tum.de/">
+                            Technische Universität München
+                        </TUMLink>
+                    </div>
+                    <div className="flex-grow" />
+                    <div className="text-2xl font-medium text-gray-900">
+                        Timeseries Visualizations
+                    </div>
+                </div>
+                <div className="w-full h-px bg-slate-300" />
                 {serverError && (
                     <div className="w-full max-w-md text-center">
                         Too many concurrent requests to the database. Please try again

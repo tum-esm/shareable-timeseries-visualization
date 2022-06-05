@@ -1,30 +1,32 @@
-import { CONSTANTS, TYPES } from './constants';
+import { TYPES } from './constants';
+
+const API_URL = process.env.GATSBY_API_URL;
 
 const backend = {
     getSchema: async (): Promise<any> => {
-        const response = await fetch(CONSTANTS.API + `/schema`);
+        const response = await fetch(API_URL + `/schema`);
         if (response.ok) {
-            return response.json();
+            return (await response.json())['schema'];
         } else {
             throw 'request failed';
         }
     },
     getData: async (database: string, table: string): Promise<any> => {
         const response = await fetch(
-            CONSTANTS.API + `/data?database=${database}&table=${table}`
+            API_URL + `/data?database=${database}&table=${table}`
         );
         if (response.ok) {
-            return response.json();
+            return await response.json();
         } else {
             throw 'request failed';
         }
     },
     getMetaData: async (database: string, table: string): Promise<TYPES.META_DATA> => {
         const response = await fetch(
-            CONSTANTS.API + `/meta-data?database=${database}&table=${table}`
+            API_URL + `/meta-data?database=${database}&table=${table}`
         );
         if (response.ok) {
-            return response.json();
+            return await response.json();
         } else {
             throw 'request failed';
         }
