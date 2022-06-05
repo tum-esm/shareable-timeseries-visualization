@@ -24,7 +24,7 @@ function TableCell(props: {
             className={
                 'text-right whitespace-nowrap ' +
                 (props.header ? 'uppercase text-xs py-1 ' : 'text-sm ') +
-                (props.leader ? 'font-bold ' : 'font-light ') +
+                (props.leader ? 'font-bold ' : 'font-normal ') +
                 props.className
             }
         >
@@ -160,9 +160,9 @@ export default function PlotPanel(props: {
             <div className="w-full p-3 flex-col-left-top">
                 <div className="w-full p-1 flex-row-left-top gap-x-1">
                     <div className="text-xl">
-                        <span className="font-semibold uppercase">{column_name}</span>
+                        <span className="font-bold uppercase">{column_name}</span>
                         {unit !== undefined && (
-                            <span className="ml-1 font-light">[{unit}]</span>
+                            <span className="ml-1 font-normal">[{unit}]</span>
                         )}
                     </div>
                     {description !== undefined && (

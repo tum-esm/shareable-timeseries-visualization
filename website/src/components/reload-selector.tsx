@@ -17,7 +17,7 @@ const ReloadSelector = (props: {
             }
         >
             <div className="flex-row-center">
-                <span className="mr-0.5 font-light">Newest data: </span>
+                <span className="mr-0.5 font-normal">Newest data: </span>
                 <span className="font-medium">
                     {props.maxTime.date},{' '}
                     {utilityFunctions.renderTimeLabel(props.maxTime.hour)} (UTC)

@@ -181,13 +181,14 @@ const IndexPage = () => {
                     </a>
                     <div className="text-xs flex-col-left text-[#3070B3]">
                         <TUMLink href="https://www.ee.cit.tum.de/esm/startseite/">
-                            Professur für Umweltsensorik und Modellierung
+                            Associate Professorship of Environmental Sensing and
+                            Modeling
                         </TUMLink>
                         <TUMLink href="https://www.cit.tum.de/">
                             TUM School of Computation, Information and Technology
                         </TUMLink>
                         <TUMLink href="https://www.tum.de/">
-                            Technische Universität München
+                            Technical University of Munich
                         </TUMLink>
                     </div>
                     <div className="flex-grow" />
