@@ -47,11 +47,14 @@ EXPECTED_DATA_COLUMNS = [
 
 
 async def run_sql_query(query):
-    # TODO: Return 404 if database is offline
     try:
         return await db.fetch_all(query)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"sql_query_failed: {e}")
+        e = str(e)
+        if e == "DatabaseBackend is not running":
+            raise HTTPException(status_code=404, detail="database is offline")
+        else:
+            raise HTTPException(status_code=500, detail=f"sql_query_failed: {e}")
 
 
 def validate_query_params(database: str, table: str):
@@ -96,12 +99,18 @@ def unique(xs: list):
 
 @app.on_event("startup")
 async def startup():
-    await db.connect()
+    try:
+        await db.connect()
+    except Exception as e:
+        print(e)
 
 
 @app.on_event("shutdown")
 async def shutdown():
-    await db.disconnect()
+    try:
+        await db.disconnect()
+    except Exception as e:
+        print(e)
 
 
 @app.get("/schema")
