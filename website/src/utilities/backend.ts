@@ -8,7 +8,11 @@ const backend = {
         if (response.ok) {
             return (await response.json())['schema'];
         } else {
-            throw 'request failed';
+            if (response.status == 404) {
+                throw 'database is offline';
+            } else {
+                throw 'request failed';
+            }
         }
     },
     getData: async (database: string, table: string): Promise<any> => {

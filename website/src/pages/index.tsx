@@ -34,7 +34,9 @@ const IndexPage = () => {
         CONSTANTS.TIMES[0]
     );
 
-    const [serverError, setServerError] = useState(false);
+    const [serverState, setServerState] = useState<'valid' | 'error' | 'offline'>(
+        'valid'
+    );
     const [autoReload, setAutoReload] = useState(false);
     const [isReloading, setIsReloading] = useState(false);
 
@@ -60,8 +62,12 @@ const IndexPage = () => {
     async function loadDatabaseSchema() {
         try {
             setDbSchema(await backend.getSchema());
-        } catch {
-            setServerError(true);
+        } catch (e) {
+            if (e === 'database is offline') {
+                setServerState('offline');
+            } else {
+                setServerState('error');
+            }
         }
     }
     async function loadData() {
@@ -84,7 +90,7 @@ const IndexPage = () => {
                 setMetaData(_metaData);
                 setIsReloading(false);
             } catch {
-                setServerError(true);
+                setServerState('error');
                 setIsReloading(false);
             }
         }
@@ -197,7 +203,7 @@ const IndexPage = () => {
                     </div>
                 </div>
                 <div className="w-full h-px bg-slate-300" />
-                {serverError && (
+                {serverState === 'error' && (
                     <div className="w-full max-w-md text-center">
                         Too many concurrent requests to the database. Please try again
                         in a few minutes.{' '}
@@ -209,7 +215,12 @@ const IndexPage = () => {
                         </button>
                     </div>
                 )}
-                {!serverError && (
+                {serverState === 'offline' && (
+                    <div className="w-full max-w-md text-center">
+                        The database is currently offline.
+                    </div>
+                )}
+                {serverState === 'valid' && (
                     <>
                         {dbSchema === undefined && (
                             <div className="w-full text-center">loading schema ...</div>
