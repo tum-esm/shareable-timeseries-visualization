@@ -12,12 +12,12 @@ def example_procedure():
     # Modifying units and description does not require old data
     # to be removed. Only changing data_columns does.
     client = STVClient(
-        database_name="airquality_course",
-        table_name="test_data_new",
+        database_name="stv_airquality_course",
+        table_name="test_data",
         data_columns=["ch4", "co2"],
         units={"ch4": "ppb", "co2": "ppm"},
         descriptions={"ch4": "The cows are at fault, for sure"},
-        minimums={"ch4": 0, "co2": 0},
+        minima={"ch4": 0, "co2": 0},
         decimal_places={"ch4": 3, "co2": 1},
         print_stuff=True,
     )

@@ -48,7 +48,7 @@ META_DATA_SCHEMA = lambda data_columns: {
             for c in data_columns
         },
     },
-    "minimums": {
+    "minima": {
         "type": "dict",
         "require_all": True,
         "schema": {c: {"type": "number", "nullable": True} for c in data_columns},
@@ -113,7 +113,7 @@ class STVClient:
         data_columns: list[str],
         units: dict[str, str] = {},
         descriptions: dict[str, str] = {},
-        minimums: dict[str, float] = {},
+        minima: dict[str, float] = {},
         decimal_places: dict[str, int] = {},
         print_stuff: bool = False,
     ):
@@ -137,7 +137,7 @@ class STVClient:
         self.meta_data = {
             "units": units,
             "descriptions": descriptions,
-            "minimums": minimums,
+            "minima": minima,
             "decimal_places": decimal_places,
         }
         for m in self.meta_data.keys():
@@ -230,7 +230,10 @@ class STVClient:
             for m in self.meta_data.keys():
                 sql_statement = (
                     f"UPDATE column_meta_data SET "
-                    + f"{m[:-1]}={meta_to_str(self.meta_data[m][c])} "
+                    + f"unit={meta_to_str(self.meta_data['units'][c])}, "
+                    + f"description={meta_to_str(self.meta_data['descriptions'][c])}, "
+                    + f"minimum={meta_to_str(self.meta_data['minima'][c])}, "
+                    + f"decimal_places={meta_to_str(self.meta_data['decimal_places'][c])} "
                     + f"WHERE table_name='{self.table_name}' AND column_name='{c}'"
                 )
                 print(sql_statement)

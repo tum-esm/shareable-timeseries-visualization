@@ -10,7 +10,7 @@ The python-client can be used to upload data to a MySQL instance. The website ca
 
 **2.** Put the credentials in a file `config.json` (format of `config.example.json`)
 
-**3.** Fill the database using the `STVClient`
+**3.** Fill the database using the `STVClient` (see `/client/main.py`)
 
 ```python
 from stv_client import STVClient
