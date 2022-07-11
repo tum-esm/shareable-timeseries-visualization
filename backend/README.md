@@ -42,35 +42,30 @@ Serving three routes: **`/schema`**, **`/data`** and **`/meta-data`**
         "unit": "µg/m³",
         "description": "Stickstoffdioxid",
         "minimum": 0.0,
-        "detection_limit": 20.0,
         "decimal_places": null
     },
     "co": {
         "unit": "mg/m³",
         "description": "Kohlenmonoxid",
         "minimum": 0.0,
-        "detection_limit": 1.0,
         "decimal_places": null
     },
     "o3": {
         "unit": "µg/m³",
         "description": "Ozon",
         "minimum": 0.0,
-        "detection_limit": 35.0,
         "decimal_places": null
     },
     "temperatur": {
         "unit": "°C",
         "description": null,
         "minimum": null,
-        "detection_limit": null,
         "decimal_places": 1
     },
     "luftfeuchtigkeit": {
         "unit": "%rH",
         "description": null,
         "minimum": 0.0,
-        "detection_limit": null,
         "decimal_places": 1
     }
 }
@@ -91,7 +86,6 @@ CREATE TABLE stv_airquality_course.column_meta_data (
     unit varchar(64) null,
     description varchar(256) null,
     minimum float null,
-    detection_limit float null,
     decimal_places int null,
     primary key (table_name, column_name)
 );
