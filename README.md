@@ -1,3 +1,7 @@
+**⚠️ Deprecated in favor of https://github.com/tum-esm/signal**
+
+---
+
 # Shareable Timeseries Visualisation
 
 The python-client can be used to upload data to a MySQL instance. The website can be used to inspect all of this data in real-time.
